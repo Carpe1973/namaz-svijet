@@ -15,9 +15,9 @@ Kompas ovisi o podršci senzora, dozvolama i kalibraciji. Ako nema senzora, prik
 geografski azimut kible (stepeni od geografskog sjevera).
 
 OBJAVA
-ZIP sadrži index.html i ostale fajlove u KORIJENU arhive.
-Za postojeći projekat 'namaz-svijetav2' na Cloudflareu treba postaviti NOVU deployment
-verziju istog projekta (ne kreirati novi projekat), koristeći ovaj ZIP.
+Cloudflare Workers Builds objavljuje promjene s grane design-green-gold-preview
+na postojeći Worker namaz-svijetav2. Adresa aplikacije je:
+https://namaz-svijetav2.mersad-e1d.workers.dev/
 Aplikacija zahtijeva HTTPS za GPS i senzore na telefonu.
 
 TEST
