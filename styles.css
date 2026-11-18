@@ -133,13 +133,40 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
 
 .quran-verses {
   margin: 4px 0 0;
-  padding-inline-start: 2.25rem;
+  padding-inline-start: 1.7rem;
+  font: 15px/1.55 system-ui, sans-serif;
+}
+
+.quran-verses li { padding: 12px 0; }
+.quran-verses li + li { border-top: 1px solid #81966766; }
+.quran-verses li::marker { color: #f4ce71; font-size: .85em; }
+.quran-license { color: #eadbb8; font: 12px/1.45 system-ui, sans-serif; }
+
+.tajweed-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  color: #ffe2a0;
+  font: 600 15px system-ui, sans-serif;
+}
+
+.tajweed-toggle input { width: 18px; height: 18px; accent-color: #efc76b; }
+.tajweed-legend { margin-bottom: 14px; color: #eadbb8; font: 13px/1.6 system-ui, sans-serif; }
+.tajweed-legend ul { margin-bottom: 0; padding-inline-start: 20px; }
+.tajweed-madd { color: #ff9e91; }
+.tajweed-nasal { color: #8fe6a7; }
+.tajweed-echo { color: #8bd1ff; }
+.tajweed-silent { color: #aabbb0; }
+
+.arabic-verse {
+  margin: 0;
+  color: #fff7e4;
   font: 26px/2 'Geeza Pro', 'Noto Naskh Arabic', serif;
-  list-style-type: arabic-indic;
   overflow-wrap: anywhere;
 }
 
-.quran-verses li { padding: 7px 0; }
-.quran-verses li + li { border-top: 1px solid #81966766; }
-.quran-verses li::marker { color: #f4ce71; font-size: .65em; }
-.quran-license { color: #eadbb8; font: 12px/1.45 system-ui, sans-serif; }
+.surah-basmala { text-align: center; margin: 6px 0; }
+.verse-translation { margin: 8px 0 0; color: #fff1d3; }
+.verse-notes { margin-top: 6px; color: #eadbb8; font-size: 12px; }
+.verse-notes p { white-space: pre-line; }

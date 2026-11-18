@@ -8,99 +8,113 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=3.5">
+  <link rel="stylesheet" href="./styles.css?v=3.6">
   <title>Namaz Svijet</title>
 </head>
 <body>
 <div class="app-shell">
   <header class="app-header">
-    <div class="identity"><span class="brand-mark" aria-hidden="true">☪</span><div><strong>Namaz Svijet</strong><small>Namaska vremena širom svijeta</small></div></div>
-    <button type="button" class="icon-button" id="settingsButton" aria-label="Postavke" title="Postavke">⚙</button>
+    <div class="identity"><span class="brand-mark" aria-hidden="true">☪</span><div><strong>Namaz Svijet</strong><small data-t="subtitle">Namaska vremena širom svijeta</small></div></div>
+    <button type="button" class="icon-button" id="settingsButton" aria-label="Postavke" title="Postavke" data-label="settings" data-title="settings">⚙</button>
   </header>
   <main>
-    <section id="timesView" class="view" aria-label="Namaska vremena">
-      <section class="next-panel" aria-label="Sljedeći namaz">
-        <div class="next-head"><span>SLJEDEĆI NAMAZ</span><span id="localClock">--:--</span></div>
-        <div class="next-row"><div><h1 id="nextName">Učitavanje…</h1><span id="nextTime">—</span></div><strong id="countdown" aria-label="Preostalo vrijeme">--:--:--</strong></div>
+    <section id="timesView" class="view" aria-label="Namaska vremena" data-label="times">
+      <section class="next-panel" aria-label="Sljedeći namaz" data-label="next">
+        <div class="next-head"><span data-t="next">SLJEDEĆI NAMAZ</span><span id="localClock">--:--</span></div>
+        <div class="next-row"><div><h1 id="nextName">Učitavanje…</h1><span id="nextTime">—</span></div><strong id="countdown" aria-label="Preostalo vrijeme" data-label="countdown">--:--:--</strong></div>
       </section>
-      <section class="place-panel" aria-label="Lokacija">
-        <div class="place-row"><span class="place-icon" aria-hidden="true">⌖</span><div class="place-details"><strong id="placeName">Le Locle, Švicarska</strong><small id="timezoneName">Učitavanje…</small></div><button class="chip" id="gpsButton" type="button">📍 GPS</button><button class="chip icon-only" id="searchToggle" type="button" aria-label="Pretraži grad" aria-expanded="false">⌕</button></div>
-        <div id="searchArea" hidden><form id="searchForm" class="search-form"><input id="cityInput" type="search" placeholder="Grad bilo gdje u svijetu…" aria-label="Naziv grada" autocomplete="off" required><button type="submit">Traži</button></form><div id="searchResults" class="search-results" hidden></div></div>
+      <section class="place-panel" aria-label="Lokacija" data-label="location">
+        <div class="place-row"><span class="place-icon" aria-hidden="true">⌖</span><div class="place-details"><strong id="placeName">Le Locle, Švicarska</strong><small id="timezoneName">Učitavanje…</small></div><button class="chip" id="gpsButton" type="button">📍 GPS</button><button class="chip icon-only" id="searchToggle" type="button" aria-label="Pretraži grad" data-label="searchCity" aria-expanded="false">⌕</button></div>
+        <div id="searchArea" hidden><form id="searchForm" class="search-form"><input id="cityInput" type="search" placeholder="Grad bilo gdje u svijetu…" data-placeholder="cityPlaceholder" aria-label="Naziv grada" data-label="city" autocomplete="off" required><button type="submit" data-t="search">Traži</button></form><div id="searchResults" class="search-results" hidden></div></div>
       </section>
       <div class="date-line"><span id="gregorianDate">—</span><span id="hijriDate">—</span></div>
-      <section class="times-grid" aria-label="Dnevna namaska vremena">
-        <article class="prayer-card fajr" data-prayer="Fajr"><div class="prayer-label">☾ <span>Sabah · početak</span></div><div class="prayer-time" id="timeFajr">--:--</div><div class="prayer-extra">Kraj <b id="fajrEnd">--:--</b></div></article>
-        <article class="prayer-card secondary" data-prayer="Sunrise"><div class="prayer-label">☀ <span>Izlazak</span></div><div class="prayer-time" id="timeSunrise">--:--</div><div class="prayer-extra">Kraj sabaha</div></article>
-        <article class="prayer-card" data-prayer="Dhuhr"><div class="prayer-label">◈ <span>Podne</span></div><div class="prayer-time" id="timeDhuhr">--:--</div></article>
-        <article class="prayer-card" data-prayer="Asr"><div class="prayer-label">✧ <span>Ikindija</span></div><div class="prayer-time" id="timeAsr">--:--</div></article>
-        <article class="prayer-card" data-prayer="Maghrib"><div class="prayer-label">◒ <span>Akšam</span></div><div class="prayer-time" id="timeMaghrib">--:--</div></article>
-        <article class="prayer-card" data-prayer="Isha"><div class="prayer-label">✦ <span>Jacija</span></div><div class="prayer-time" id="timeIsha">--:--</div></article>
+      <section class="times-grid" aria-label="Dnevna namaska vremena" data-label="dayTimes">
+        <article class="prayer-card fajr" data-prayer="Fajr"><div class="prayer-label">☾ <span data-t="fajrStart">Sabah · početak</span></div><div class="prayer-time" id="timeFajr">--:--</div><div class="prayer-extra"><span data-t="end">Kraj</span> <b id="fajrEnd">--:--</b></div></article>
+        <article class="prayer-card secondary" data-prayer="Sunrise"><div class="prayer-label">☀ <span data-t="Sunrise">Izlazak</span></div><div class="prayer-time" id="timeSunrise">--:--</div><div class="prayer-extra" data-t="fajrEnd"><span data-t="end">Kraj </span>sabaha</div></article>
+        <article class="prayer-card" data-prayer="Dhuhr"><div class="prayer-label">◈ <span data-t="Dhuhr">Podne</span></div><div class="prayer-time" id="timeDhuhr">--:--</div></article>
+        <article class="prayer-card" data-prayer="Asr"><div class="prayer-label">✧ <span data-t="Asr">Ikindija</span></div><div class="prayer-time" id="timeAsr">--:--</div></article>
+        <article class="prayer-card" data-prayer="Maghrib"><div class="prayer-label">◒ <span data-t="Maghrib">Akšam</span></div><div class="prayer-time" id="timeMaghrib">--:--</div></article>
+        <article class="prayer-card" data-prayer="Isha"><div class="prayer-label">✦ <span data-t="Isha">Jacija</span></div><div class="prayer-time" id="timeIsha">--:--</div></article>
       </section>
       <p class="source-note" id="sourceNote"></p>
     </section>
-    <section id="qiblaView" class="view qibla-view" aria-label="Pravac kible" hidden>
-      <div class="qibla-intro"><h1>🕋 Pravac kible</h1><p id="qiblaPlace">Le Locle, Švicarska</p></div>
-      <div class="compass-wrap"><div class="compass" id="compass" role="img" aria-label="Kompas za kiblu">
+    <section id="qiblaView" class="view qibla-view" aria-label="Pravac kible" data-label="qiblaHeading" hidden>
+      <div class="qibla-intro"><h1><span data-t="qiblaHeading">🕋 Pravac kible</span></h1><p id="qiblaPlace">Le Locle, Švicarska</p></div>
+      <div class="compass-wrap"><div class="compass" id="compass" role="img" aria-label="Kompas za kiblu" data-label="compass">
         <div class="compass-ring"></div>
         <div class="north-indicator" id="northIndicator"><span>N</span></div>
         <div class="qibla-pointer" id="qiblaPointer"><span class="pointer-tip"></span><span class="pointer-shaft"></span></div>
         <div class="compass-center">🕋</div>
       </div></div>
       <div class="bearing-info"><strong id="qiblaDegrees">—°</strong><span id="qiblaDirection">od geografskog sjevera</span></div>
-      <button class="primary-button" type="button" id="compassButton">🧭 Uključi kompas</button>
-      <p class="compass-status" id="compassStatus" role="status">Bez senzora strelica pokazuje pravac u odnosu na sjever, a ne smjer u kojem držiš telefon.</p>
-      <p class="qibla-note">Za precizniji smjer udalji telefon od metala i magneta. Senzor može zahtijevati dozvolu i kalibraciju.</p>
+      <button class="primary-button" type="button" id="compassButton">🧭 <span id="compassButtonLabel" data-t="compassOn">Uključi kompas</span></button>
+      <p class="compass-status" id="compassStatus" role="status" data-t="compassDefault">Bez senzora strelica pokazuje pravac u odnosu na sjever, a ne smjer u kojem držiš telefon.</p>
+      <p class="qibla-note" data-t="compassNote">Za precizniji smjer udalji telefon od metala i magneta. Senzor može zahtijevati dozvolu i kalibraciju.</p>
     </section>
     <section id="scheduleView" class="reading-view" aria-labelledby="scheduleTitle" hidden>
-      <h1 id="scheduleTitle">Vaktija</h1>
+      <h1 id="scheduleTitle" data-t="schedule">Vaktija</h1>
       <p class="view-detail" id="schedulePlace"></p>
-      <div class="schedule-periods" role="group" aria-label="Period vaktije">
-        <button type="button" data-period="today" aria-pressed="true">Danas</button>
-        <button type="button" data-period="tomorrow" aria-pressed="false">Sutra</button>
-        <button type="button" data-period="week" aria-pressed="false">7 dana</button>
+      <div class="schedule-periods" role="group" aria-label="Period vaktije" data-label="period">
+        <button type="button" data-period="today" aria-pressed="true" data-t="today">Danas</button>
+        <button type="button" data-period="tomorrow" aria-pressed="false" data-t="tomorrow">Sutra</button>
+        <button type="button" data-period="week" aria-pressed="false" data-t="week">7 dana</button>
       </div>
       <p class="view-detail" id="scheduleStatus" role="status" hidden></p>
       <div id="scheduleDays" class="schedule-days"></div>
       <p id="scheduleSource" class="source-note"></p>
     </section>
     <section id="quranView" class="reading-view" aria-labelledby="quranTitle" hidden>
-      <h1 id="quranTitle">Kur’an</h1>
-      <label class="quran-picker" for="surahSelect">Sura
+      <h1 id="quranTitle" data-t="quran">Kur’an</h1>
+      <label class="quran-picker" for="surahSelect"><span data-t="surah">Sura</span>
         <select id="surahSelect" disabled></select>
       </label>
+      <label class="tajweed-toggle"><input type="checkbox" id="tajweedToggle" checked> <span data-t="tajweed">Tedžvid u boji</span></label>
+      <details id="tajweedLegend" class="tajweed-legend">
+        <summary data-t="legend">Značenje boja</summary>
+        <ul>
+          <li class="tajweed-madd" data-t="lengthen">Medd · produži</li>
+          <li class="tajweed-nasal" data-t="nasal">Gunna i srodna pravila</li>
+          <li class="tajweed-echo" data-t="echo">Kalkala · odjek</li>
+          <li class="tajweed-silent" data-t="silent">Slova koja se ne izgovaraju</li>
+        </ul>
+      </details>
       <p class="view-detail" id="quranStatus" role="status" hidden></p>
-      <button class="secondary-button" type="button" id="quranRetry" hidden>Pokušaj ponovo</button>
+      <button class="secondary-button" type="button" id="quranRetry" hidden data-t="retry">Pokušaj ponovo</button>
       <article id="quranChapter" class="reading-card" aria-labelledby="surahTitle" hidden>
         <h2 id="surahTitle" dir="rtl" lang="ar"></h2>
-        <ol id="surahVerses" class="quran-verses" dir="rtl" lang="ar"></ol>
+        <p id="surahBasmala" class="arabic-verse surah-basmala" dir="rtl" lang="ar" hidden></p>
+        <ol id="surahVerses" class="quran-verses"></ol>
+        <p class="source-note" id="translationCredit" hidden><span data-t="translation">Prevod</span> · <a id="translationLink" href="https://quranenc.com/"></a></p>
       </article>
-      <p class="source-note">Arapski tekst · <a href="https://tanzil.net/">Tanzil Project</a> · <a href="https://github.com/risan/quran-json">Quran JSON</a></p>
-      <details id="quranLicense" class="quran-license" hidden><summary>Licenca teksta</summary><p id="quranNotice" lang="en"></p></details>
+      <p class="source-note"><span data-t="arabic">Arapski tekst</span> · <a href="https://tanzil.net/">Tanzil Project</a> · <a href="https://github.com/risan/quran-json">Quran JSON</a> <span id="tajweedCredit" hidden>· <a href="https://quran.com/">Quran Foundation</a></span></p>
+      <details id="quranLicense" class="quran-license" hidden><summary data-t="license">Licenca teksta</summary><p id="quranNotice" lang="en"></p></details>
     </section>
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </main>
-  <nav class="bottom-nav" aria-label="Glavna navigacija">
-    <button id="timesTab" type="button" class="tab active" aria-current="page"><span aria-hidden="true">☪</span><span>Namazi</span></button>
-    <button id="qiblaTab" type="button" class="tab"><span aria-hidden="true">🧭</span><span>Kibla</span></button>
-    <button id="scheduleTab" type="button" class="tab"><span aria-hidden="true">▦</span><span>Vaktija</span></button>
-    <button id="quranTab" type="button" class="tab"><span aria-hidden="true">📖</span><span>Kur’an</span></button>
+  <nav class="bottom-nav" aria-label="Glavna navigacija" data-label="navigation">
+    <button id="timesTab" type="button" class="tab active" aria-current="page"><span aria-hidden="true">☪</span><span data-t="times">Namazi</span></button>
+    <button id="qiblaTab" type="button" class="tab"><span aria-hidden="true">🧭</span><span data-t="qibla">Kibla</span></button>
+    <button id="scheduleTab" type="button" class="tab"><span aria-hidden="true">▦</span><span data-t="schedule">Vaktija</span></button>
+    <button id="quranTab" type="button" class="tab"><span aria-hidden="true">📖</span><span data-t="quran">Kur’an</span></button>
   </nav>
 </div>
 <dialog id="settingsDialog">
   <div class="settings">
-    <div class="settings-heading"><h2>⚙ Postavke</h2><button type="button" class="close-button" id="closeSettings" aria-label="Zatvori">✕</button></div>
-    <p class="settings-hint" id="alBadrSettings" hidden>Za Le Locle koristi se raspored džamije Al-Badr. Postavke proračuna dostupne su za druge lokacije.</p>
+    <div class="settings-heading"><h2><span data-t="settings">⚙ Postavke</span></h2><button type="button" class="close-button" id="closeSettings" aria-label="Zatvori" data-label="close">✕</button></div>
+    <label for="appLanguage"><span data-t="language">Jezik aplikacije</span><select id="appLanguage"></select></label>
+    <p class="settings-hint" id="alBadrSettings" hidden data-t="alBadrSettings">Za Le Locle koristi se raspored džamije Al-Badr. Postavke proračuna dostupne su za druge lokacije.</p>
     <div id="calculationSettings">
-    <label>Metoda računanja<select id="methodSelect"><option value="3">Muslim World League (MWL)</option><option value="13">Diyanet – Turska</option><option value="2">ISNA – Sjeverna Amerika</option><option value="4">Umm al-Qura – Mekka</option><option value="5">Egipatska metoda</option><option value="15">Moonsighting Committee</option></select></label>
-    <label>Ikindija (mezheb)<select id="schoolSelect"><option value="0">Standard</option><option value="1">Hanefijski</option></select></label>
-    <p class="settings-hint">Proračun nije uvijek jednak vremenima lokalne džamije. Korekcije minuta važe samo za izabranu lokaciju.</p>
-    <details><summary>Korekcije vremena (minute)</summary><div class="offsets" id="offsets"></div><button type="button" class="secondary-button" id="resetOffsets">Poništi korekcije</button></details>
-    <details><summary>Unesi raspored džamije za danas</summary><p class="settings-hint" id="manualDateLabel">Ručno unijeta vremena važe samo za ovaj datum i lokaciju. Unosi samo provjerene podatke.</p><label>Naziv džamije / izvor<input type="text" id="mosqueName" maxlength="80" placeholder="Npr. Al-Badr"></label><div class="manual-times" id="manualTimes"></div><button type="button" class="secondary-button" id="clearManual">Ukloni ručni raspored</button></details>
-    <button type="button" class="primary-button save-button" id="saveSettings">Sačuvaj postavke</button>
+    <label><span data-t="method">Metoda računanja</span><select id="methodSelect"><option value="3">Muslim World League (MWL)</option><option value="13" data-t="turkey">Diyanet – Turska</option><option value="2" data-t="northAmerica">ISNA – Sjeverna Amerika</option><option value="4" data-t="mekka">Umm al-Qura – Mekka</option><option value="5" data-t="egypt">Egipatska metoda</option><option value="15">Moonsighting Committee</option></select></label>
+    <label><span data-t="school">Ikindija (mezheb)</span><select id="schoolSelect"><option value="0">Standard</option><option value="1" data-t="hanafi">Hanefijski</option></select></label>
+    <p class="settings-hint" data-t="settingsNote">Proračun nije uvijek jednak vremenima lokalne džamije. Korekcije minuta važe samo za izabranu lokaciju.</p>
+    <details><summary data-t="offsets">Korekcije vremena (minute)</summary><div class="offsets" id="offsets"></div><button type="button" class="secondary-button" id="resetOffsets" data-t="resetOffsets">Poništi korekcije</button></details>
+    <details><summary data-t="manual">Unesi raspored džamije za danas</summary><p class="settings-hint" id="manualDateLabel">Ručno unijeta vremena važe samo za ovaj datum i lokaciju. Unosi samo provjerene podatke.</p><label><span data-t="mosque">Naziv džamije / izvor</span><input type="text" id="mosqueName" maxlength="80" placeholder="Npr. Al-Badr" data-placeholder="mosqueExample"></label><div class="manual-times" id="manualTimes"></div><button type="button" class="secondary-button" id="clearManual" data-t="clearManual">Ukloni ručni raspored</button></details>
+    <button type="button" class="primary-button save-button" id="saveSettings" data-t="save">Sačuvaj postavke</button>
     </div>
   </div>
 </dialog>
 <script src="./al-badr-2026.js" defer></script>
-<script src="./app.js?v=3.5" defer></script>
+<script src="./i18n.js?v=3.6" defer></script>
+<script src="./app.js?v=3.6" defer></script>
 </body>
 </html>
