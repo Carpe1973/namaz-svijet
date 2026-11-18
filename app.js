@@ -228,6 +228,47 @@ async function activateCompass(){
     setTimeout(()=>{if(heading===null&&compassActive)$('compassStatus').textContent='Senzor ne šalje pouzdan smjer. Koristi prikaz stepeni od geografskog sjevera.'},4000);
   }catch{$('compassStatus').textContent='Pristup kompasu nije dostupan. Koristi prikaz stepeni od sjevera.'}
 }
+function enableTemporaryZoom(app){
+  let initialDistance = 0;
+  const distance = (first, second) => Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
+
+  function resetZoom(){
+    initialDistance = 0;
+    app.style.removeProperty('transform-origin');
+    app.style.removeProperty('transform');
+  }
+
+  app.addEventListener('touchstart', event => {
+    if(event.touches.length !== 2){
+      if(initialDistance) resetZoom();
+      return;
+    }
+
+    const first = event.touches[0];
+    const second = event.touches[1];
+    initialDistance = Math.max(1, distance(first, second));
+    const bounds = app.getBoundingClientRect();
+    const centerX = (first.clientX + second.clientX) / 2 - bounds.left;
+    const centerY = (first.clientY + second.clientY) / 2 - bounds.top;
+    app.style.transformOrigin = `${centerX}px ${centerY}px`;
+    if(event.cancelable) event.preventDefault();
+  }, {passive: false});
+
+  app.addEventListener('touchmove', event => {
+    if(!initialDistance || event.touches.length !== 2) return;
+    if(event.cancelable) event.preventDefault();
+    const currentDistance = distance(event.touches[0], event.touches[1]);
+    const scale = Math.min(3, Math.max(1, currentDistance / initialDistance));
+    app.style.transform = `scale(${scale})`;
+  }, {passive: false});
+
+  app.addEventListener('touchend', event => {
+    if(initialDistance && event.touches.length < 2) resetZoom();
+  });
+  app.addEventListener('touchcancel', resetZoom);
+}
+
+enableTemporaryZoom(document.querySelector('.app-shell'));
 $('methodSelect').value=method;$('schoolSelect').value=school;
 $('timesTab').addEventListener('click',()=>setView('times'));
 $('qiblaTab').addEventListener('click',()=>setView('qibla'));
