@@ -8,6 +8,11 @@ const NAMES={Fajr:'Sabah',Sunrise:'Izlazak sunca',Dhuhr:'Podne',Asr:'Ikindija',M
 const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:'Europe/Zurich'};
 const AL_BADR_URL='https://mawaqit.net/fr/mosquee-al-badr-le-locle';
 const AL_BADR_GPS_RADIUS_KM=1.5;
+const QURAN_SOURCE = 'https://quran-json.risanb.com';
+const VIEWS = ['times', 'qibla', 'schedule', 'quran'];
+const SCHEDULE_PERIODS = {today: [0], tomorrow: [1], week: [0, 1, 2, 3, 4, 5, 6]};
+let schedulePeriod = 'today', scheduleRequest = 0;
+let quranChapters = [], quranRequest = 0, quranLoading = false;
 function usesAlBadr(){
   const name=place.name.split(',')[0].trim().toLowerCase().replace(/-/g,' ');
   return (name==='le locle' && place.timezone===DEFAULT.timezone)
@@ -59,10 +64,135 @@ function renderCompass(){
   $('northIndicator').style.transform=`rotate(${-(heading??0)}deg)`;
 }
 function setView(name){
-  const q=name==='qibla';$('timesView').hidden=q;$('qiblaView').hidden=!q;
-  $('timesTab').classList.toggle('active',!q);$('qiblaTab').classList.toggle('active',q);
-  if(q){$('qiblaTab').setAttribute('aria-current','page');$('timesTab').removeAttribute('aria-current')}
-  else{$('timesTab').setAttribute('aria-current','page');$('qiblaTab').removeAttribute('aria-current')}
+  const changed = $(name+'View').hidden;
+  for(const view of VIEWS){
+    const active = view === name;
+    const tab = $(view+'Tab');
+    $(view+'View').hidden = !active;
+    tab.classList.toggle('active', active);
+    if(active) tab.setAttribute('aria-current', 'page');
+    else tab.removeAttribute('aria-current');
+  }
+  if(changed) window.scrollTo(0, 0);
+  if(name === 'schedule') renderSchedule();
+  if(name === 'quran' && $('quranChapter').hidden && !quranLoading) openQuran();
+}
+
+function panelMessage(id, message){
+  const target = $(id);
+  target.textContent = message;
+  target.hidden = !message;
+}
+
+function scheduleCard(date, data){
+  const card = document.createElement('article');
+  card.className = 'reading-card';
+  const title = document.createElement('h2');
+  title.textContent = dateText(date);
+  const times = document.createElement('dl');
+  times.className = 'schedule-times';
+  for(const key of KEYS){
+    const slot = document.createElement('div');
+    const label = document.createElement('dt');
+    const value = document.createElement('dd');
+    label.textContent = NAMES[key];
+    value.textContent = displayTime(key, data, date) || '—';
+    slot.append(label, value);
+    times.append(slot);
+  }
+  card.append(title, times);
+  return card;
+}
+
+async function renderSchedule(){
+  const request = ++scheduleRequest;
+  const days = $('scheduleDays');
+  const source = $('scheduleSource');
+  $('schedulePlace').textContent = place.name;
+  days.replaceChildren();
+  source.textContent = '';
+  panelMessage('scheduleStatus', 'Učitavam vaktiju…');
+  if(busy) return;
+
+  const today = zoned(new Date(), prayerTimezone());
+  const currentDay = lastDate === keyOf(today);
+  const dates = SCHEDULE_PERIODS[schedulePeriod].map(offset => dayPlus(today, offset));
+  const results = await Promise.allSettled(SCHEDULE_PERIODS[schedulePeriod].map((offset, index) => {
+    if(currentDay && offset === 0 && dayData) return dayData;
+    if(currentDay && offset === 1 && tomorrowData) return tomorrowData;
+    return timings(dates[index]);
+  }));
+  if(request !== scheduleRequest) return;
+
+  const hasMissingTimes = results.some(({value}, index) => KEYS.some(key => !displayTime(key, value, dates[index])));
+  panelMessage('scheduleStatus', hasMissingTimes ? 'Neka vremena za odabrani period nisu dostupna.' : '');
+  days.replaceChildren(...dates.map((date, index) => scheduleCard(date, results[index].value)));
+  if(usesAlBadr()){
+    const link = document.createElement('a');
+    link.href = AL_BADR_URL;
+    link.textContent = 'Džamija Al-Badr';
+    source.append('Izvor · ', link);
+  }else{
+    source.textContent = 'Izvor · AlAdhan, uz sačuvane korekcije i ručne unose.';
+  }
+}
+
+async function fetchQuran(path){
+  const response = await fetch(QURAN_SOURCE + path);
+  if(!response.ok) throw Error('Quran source unavailable');
+  return response.json();
+}
+
+async function openQuran(){
+  const request = ++quranRequest;
+  const select = $('surahSelect');
+  const retry = $('quranRetry');
+  quranLoading = true;
+  retry.hidden = true;
+  $('quranChapter').hidden = true;
+  $('quranLicense').hidden = true;
+  panelMessage('quranStatus', 'Učitavam Kur’an…');
+
+  try{
+    if(!quranChapters.length){
+      const chapters = await fetchQuran('/chapters.json');
+      if(!Array.isArray(chapters) || chapters.length !== 114 || !chapters.every((chapter, index) => chapter.id === index + 1)){
+        throw Error('Invalid chapter list');
+      }
+      quranChapters = chapters;
+      select.replaceChildren(...chapters.map(chapter => new Option(`${chapter.id}. ${chapter.transliteration} · ${chapter.name}`, chapter.id)));
+      const preferred = String(saved('ns_surah', 1));
+      if(chapters.some(chapter => String(chapter.id) === preferred)) select.value = preferred;
+      select.disabled = false;
+    }
+
+    const chapter = quranChapters[Number(select.value) - 1];
+    const data = await fetchQuran(`/text/uthmani/chapters/${chapter.id}.json`);
+    if(request !== quranRequest) return;
+    if(data.id !== chapter.id || data.verses?.length !== chapter.total_verses ||
+      !data.verses.every((verse, index) => verse.id === index + 1 && typeof verse.text === 'string' && verse.text.trim())){
+      throw Error('Invalid chapter');
+    }
+
+    const verses = data.verses.map(verse => {
+      const item = document.createElement('li');
+      item.textContent = verse.text;
+      return item;
+    });
+    $('surahTitle').textContent = chapter.name;
+    $('surahVerses').replaceChildren(...verses);
+    $('quranNotice').textContent = data.notice || '';
+    $('quranLicense').hidden = !data.notice;
+    $('quranChapter').hidden = false;
+    panelMessage('quranStatus', '');
+    save('ns_surah', chapter.id);
+  }catch{
+    if(request !== quranRequest) return;
+    panelMessage('quranStatus', 'Tekst se trenutno ne može učitati. Provjeri internet.');
+    retry.hidden = false;
+  }finally{
+    if(request === quranRequest) quranLoading = false;
+  }
 }
 async function timings(p){
   if(usesAlBadr()){
@@ -84,6 +214,7 @@ async function loadTimings(){
   resetCountdown('Učitavanje…');
   $('sourceNote').textContent='';
   $('timezoneName').textContent=prayerTimezone();
+  if(!$('scheduleView').hidden) renderSchedule();
   const today=zoned(new Date(),prayerTimezone());
   try{
     const [a,b]=await Promise.all([timings(today),timings(dayPlus(today,1))]);
@@ -98,7 +229,12 @@ async function loadTimings(){
     resetCountdown('Nema podataka');
     $('sourceNote').textContent='Izvor proračuna prema koordinatama · AlAdhan';
     status(`${err.message} Provjeri internet i pokušaj ponovo.`);
-  }finally{if(mine===requestId)busy=false}
+  }finally{
+    if(mine===requestId){
+      busy=false;
+      if(!$('scheduleView').hidden) renderSchedule();
+    }
+  }
 }
 function clearTimes(){
   for(const k of KEYS)$('time'+k).textContent='--:--';
@@ -270,8 +406,17 @@ function enableTemporaryZoom(app){
 
 enableTemporaryZoom(document.querySelector('.app-shell'));
 $('methodSelect').value=method;$('schoolSelect').value=school;
-$('timesTab').addEventListener('click',()=>setView('times'));
-$('qiblaTab').addEventListener('click',()=>setView('qibla'));
+for(const view of VIEWS) $(view+'Tab').addEventListener('click',()=>setView(view));
+const periodButtons = document.querySelectorAll('[data-period]');
+for(const button of periodButtons){
+  button.addEventListener('click', () => {
+    schedulePeriod = button.dataset.period;
+    for(const option of periodButtons) option.setAttribute('aria-pressed', String(option === button));
+    renderSchedule();
+  });
+}
+$('surahSelect').addEventListener('change', openQuran);
+$('quranRetry').addEventListener('click', openQuran);
 $('searchToggle').addEventListener('click',()=>{const show=$('searchArea').hidden;$('searchArea').hidden=!show;$('searchToggle').setAttribute('aria-expanded',String(show));if(show)$('cityInput').focus()});
 $('searchForm').addEventListener('submit',searchCities);
 $('gpsButton').addEventListener('click',startGPS);

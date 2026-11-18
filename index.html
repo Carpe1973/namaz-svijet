@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=3.4">
+  <link rel="stylesheet" href="./styles.css?v=3.5">
   <title>Namaz Svijet</title>
 </head>
 <body>
@@ -51,9 +51,40 @@
       <p class="compass-status" id="compassStatus" role="status">Bez senzora strelica pokazuje pravac u odnosu na sjever, a ne smjer u kojem držiš telefon.</p>
       <p class="qibla-note">Za precizniji smjer udalji telefon od metala i magneta. Senzor može zahtijevati dozvolu i kalibraciju.</p>
     </section>
+    <section id="scheduleView" class="reading-view" aria-labelledby="scheduleTitle" hidden>
+      <h1 id="scheduleTitle">Vaktija</h1>
+      <p class="view-detail" id="schedulePlace"></p>
+      <div class="schedule-periods" role="group" aria-label="Period vaktije">
+        <button type="button" data-period="today" aria-pressed="true">Danas</button>
+        <button type="button" data-period="tomorrow" aria-pressed="false">Sutra</button>
+        <button type="button" data-period="week" aria-pressed="false">7 dana</button>
+      </div>
+      <p class="view-detail" id="scheduleStatus" role="status" hidden></p>
+      <div id="scheduleDays" class="schedule-days"></div>
+      <p id="scheduleSource" class="source-note"></p>
+    </section>
+    <section id="quranView" class="reading-view" aria-labelledby="quranTitle" hidden>
+      <h1 id="quranTitle">Kur’an</h1>
+      <label class="quran-picker" for="surahSelect">Sura
+        <select id="surahSelect" disabled></select>
+      </label>
+      <p class="view-detail" id="quranStatus" role="status" hidden></p>
+      <button class="secondary-button" type="button" id="quranRetry" hidden>Pokušaj ponovo</button>
+      <article id="quranChapter" class="reading-card" aria-labelledby="surahTitle" hidden>
+        <h2 id="surahTitle" dir="rtl" lang="ar"></h2>
+        <ol id="surahVerses" class="quran-verses" dir="rtl" lang="ar"></ol>
+      </article>
+      <p class="source-note">Arapski tekst · <a href="https://tanzil.net/">Tanzil Project</a> · <a href="https://github.com/risan/quran-json">Quran JSON</a></p>
+      <details id="quranLicense" class="quran-license" hidden><summary>Licenca teksta</summary><p id="quranNotice" lang="en"></p></details>
+    </section>
     <p class="status" id="status" role="status" aria-live="polite"></p>
   </main>
-  <nav class="bottom-nav" aria-label="Glavna navigacija"><button id="timesTab" type="button" class="tab active" aria-current="page">☪ <span>Namazi</span></button><button id="qiblaTab" type="button" class="tab">🧭 <span>Kibla</span></button></nav>
+  <nav class="bottom-nav" aria-label="Glavna navigacija">
+    <button id="timesTab" type="button" class="tab active" aria-current="page"><span aria-hidden="true">☪</span><span>Namazi</span></button>
+    <button id="qiblaTab" type="button" class="tab"><span aria-hidden="true">🧭</span><span>Kibla</span></button>
+    <button id="scheduleTab" type="button" class="tab"><span aria-hidden="true">▦</span><span>Vaktija</span></button>
+    <button id="quranTab" type="button" class="tab"><span aria-hidden="true">📖</span><span>Kur’an</span></button>
+  </nav>
 </div>
 <dialog id="settingsDialog">
   <div class="settings">
@@ -70,6 +101,6 @@
   </div>
 </dialog>
 <script src="./al-badr-2026.js" defer></script>
-<script src="./app.js?v=3.4" defer></script>
+<script src="./app.js?v=3.5" defer></script>
 </body>
 </html>
