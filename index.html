@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=3.1">
+  <link rel="stylesheet" href="./styles.css?v=3.2">
   <title>Namaz Svijet</title>
 </head>
 <body>
@@ -29,14 +29,14 @@
       </section>
       <div class="date-line"><span id="gregorianDate">—</span><span id="hijriDate">—</span></div>
       <section class="times-grid" aria-label="Dnevna namaska vremena">
-        <article class="prayer-card fajr" data-prayer="Fajr"><div class="prayer-label">☾ <span>Sabah</span></div><div class="prayer-time" id="timeFajr">--:--</div><div class="prayer-extra">Kraj <b id="fajrEnd">--:--</b></div></article>
+        <article class="prayer-card fajr" data-prayer="Fajr"><div class="prayer-label">☾ <span>Sabah · početak</span></div><div class="prayer-time" id="timeFajr">--:--</div><div class="prayer-extra">Kraj <b id="fajrEnd">--:--</b></div></article>
         <article class="prayer-card secondary" data-prayer="Sunrise"><div class="prayer-label">☀ <span>Izlazak</span></div><div class="prayer-time" id="timeSunrise">--:--</div><div class="prayer-extra">Kraj sabaha</div></article>
         <article class="prayer-card" data-prayer="Dhuhr"><div class="prayer-label">◈ <span>Podne</span></div><div class="prayer-time" id="timeDhuhr">--:--</div></article>
         <article class="prayer-card" data-prayer="Asr"><div class="prayer-label">✧ <span>Ikindija</span></div><div class="prayer-time" id="timeAsr">--:--</div></article>
         <article class="prayer-card" data-prayer="Maghrib"><div class="prayer-label">◒ <span>Akšam</span></div><div class="prayer-time" id="timeMaghrib">--:--</div></article>
         <article class="prayer-card" data-prayer="Isha"><div class="prayer-label">✦ <span>Jacija</span></div><div class="prayer-time" id="timeIsha">--:--</div></article>
       </section>
-      <p class="source-note" id="sourceNote">Vremena su proračun, a ne službeni raspored džamije.</p>
+      <p class="source-note" id="sourceNote"></p>
     </section>
     <section id="qiblaView" class="view qibla-view" aria-label="Pravac kible" hidden>
       <div class="qibla-intro"><h1>🕋 Pravac kible</h1><p id="qiblaPlace">Le Locle, Švicarska</p></div>
@@ -58,14 +58,18 @@
 <dialog id="settingsDialog">
   <div class="settings">
     <div class="settings-heading"><h2>⚙ Postavke</h2><button type="button" class="close-button" id="closeSettings" aria-label="Zatvori">✕</button></div>
+    <p class="settings-hint" id="alBadrSettings" hidden>Za Le Locle koristi se raspored džamije Al-Badr. Postavke proračuna dostupne su za druge lokacije.</p>
+    <div id="calculationSettings">
     <label>Metoda računanja<select id="methodSelect"><option value="3">Muslim World League (MWL)</option><option value="13">Diyanet – Turska</option><option value="2">ISNA – Sjeverna Amerika</option><option value="4">Umm al-Qura – Mekka</option><option value="5">Egipatska metoda</option><option value="15">Moonsighting Committee</option></select></label>
     <label>Ikindija (mezheb)<select id="schoolSelect"><option value="0">Standard</option><option value="1">Hanefijski</option></select></label>
     <p class="settings-hint">Proračun nije uvijek jednak vremenima lokalne džamije. Korekcije minuta važe samo za izabranu lokaciju.</p>
     <details><summary>Korekcije vremena (minute)</summary><div class="offsets" id="offsets"></div><button type="button" class="secondary-button" id="resetOffsets">Poništi korekcije</button></details>
     <details><summary>Unesi raspored džamije za danas</summary><p class="settings-hint" id="manualDateLabel">Ručno unijeta vremena važe samo za ovaj datum i lokaciju. Unosi samo provjerene podatke.</p><label>Naziv džamije / izvor<input type="text" id="mosqueName" maxlength="80" placeholder="Npr. Al-Badr"></label><div class="manual-times" id="manualTimes"></div><button type="button" class="secondary-button" id="clearManual">Ukloni ručni raspored</button></details>
     <button type="button" class="primary-button save-button" id="saveSettings">Sačuvaj postavke</button>
+    </div>
   </div>
 </dialog>
-<script src="./app.js?v=3.1" defer></script>
+<script src="./al-badr-2026.js" defer></script>
+<script src="./app.js?v=3.2" defer></script>
 </body>
 </html>
