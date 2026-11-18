@@ -1,0 +1,9 @@
+/.assetsignore
+/.git/
+/.github/
+/.wrangler/
+/.env*
+/.dev.vars*
+/node_modules/
+/README.*
+/wrangler.toml
