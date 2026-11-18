@@ -1,5 +1,5 @@
-const CACHE='namaz-svijet-v3-9';
-const ASSETS=['./','./index.html','./styles.css?v=3.9','./app.js?v=3.9','./i18n.js?v=3.6','./al-badr-2026.js','./cci-2026.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='namaz-svijet-v3-10';
+const ASSETS=['./','./index.html','./styles.css?v=3.10','./app.js?v=3.10','./i18n.js?v=3.10','./al-badr-2026.js','./cci-2026.js','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('namaz-svijet-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',event=>{if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)))});

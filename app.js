@@ -654,6 +654,17 @@ for(const button of periodButtons){
 }
 $('surahSelect').addEventListener('change', openQuran);
 $('quranRetry').addEventListener('click', openQuran);
+const readingSize = $('readingSize');
+readingSize.value = saved('ns_reading_size', 100);
+function applyReadingSize(){
+  const percent = readingSize.valueAsNumber;
+  $('quranView').style.setProperty('--reading-scale', String(percent / 100));
+  $('readingPercent').value = percent + '%';
+  readingSize.setAttribute('aria-valuetext', percent + '%');
+}
+applyReadingSize();
+readingSize.addEventListener('input', applyReadingSize);
+readingSize.addEventListener('change', () => save('ns_reading_size', readingSize.valueAsNumber));
 $('tajweedToggle').checked = saved('ns_tajweed', true);
 $('tajweedToggle').addEventListener('change', event => {
   save('ns_tajweed', event.target.checked);

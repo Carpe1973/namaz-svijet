@@ -137,6 +137,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
   font: 15px/1.55 system-ui, sans-serif;
 }
 
+.reading-size { display: grid; grid-template-columns: 1fr auto; align-items: center; color: #ffe2a0; font: 600 15px system-ui, sans-serif; }
+.reading-size input { grid-column: 1 / -1; width: 100%; height: 40px; margin: 0; accent-color: #efc76b; }
 .quran-verses li { padding: 12px 0; }
 .quran-verses li + li { border-top: 1px solid #81966766; }
 .quran-verses li::marker { color: #f4ce71; font-size: .85em; }
@@ -162,13 +164,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
 .arabic-verse {
   margin: 0;
   color: #fff7e4;
-  font: 26px/2 'Geeza Pro', 'Noto Naskh Arabic', serif;
+  font: calc(26px * var(--reading-scale, 1))/2 'Geeza Pro', 'Noto Naskh Arabic', serif;
   overflow-wrap: anywhere;
 }
 
 .surah-basmala { text-align: center; margin: 6px 0; }
-.verse-translation { margin: 8px 0 0; color: #fff1d3; }
-.verse-notes { margin-top: 6px; color: #eadbb8; font-size: 12px; }
+.verse-translation { overflow-wrap: anywhere; font-size: calc(15px * var(--reading-scale, 1)); margin: 8px 0 0; color: #fff1d3; }
+.verse-notes { margin-top: 6px; color: #eadbb8; font-size: calc(12px * var(--reading-scale, 1)); }
 .verse-notes p { white-space: pre-line; }
 
 @media (any-pointer: coarse) {

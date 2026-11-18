@@ -52,6 +52,7 @@ const UI_TEXT = {
   arabic: ['Arapski tekst','Texte arabe','Arabischer Text','Arabic text'],
   translation: ['Prevod','Traduction','Übersetzung','Translation'],
   footnotes: ['Bilješke prevodioca','Notes du traducteur','Anmerkungen zur Übersetzung','Translator’s notes'],
+  readingSize: ['Veličina slova','Taille du texte','Schriftgröße','Text size'],
   tajweed: ['Tedžvid u boji','Tajwid en couleur','Tadschwīd in Farbe','Tajweed colours'],
   legend: ['Značenje boja','Légende des couleurs','Farblegende','Colour key'],
   lengthen: ['Medd · produži','Madd · prolongation','Madd · Dehnung','Madd · prolongation'],
