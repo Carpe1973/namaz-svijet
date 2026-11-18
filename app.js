@@ -435,23 +435,85 @@ function updateCountdown(){
   $('countdown').textContent=`${pad(h)}:${pad(Math.floor(secs/60))}:${pad(secs%60)}`;
   document.querySelectorAll('.prayer-card').forEach(el=>el.classList.toggle('active',el.dataset.prayer===next.key));
 }
-async function searchCities(e){
-  e.preventDefault();const q=$('cityInput').value.trim();if(q.length<2)return;
-  const results=$('searchResults');results.hidden=false;results.textContent=t('searchLoading');
+let citySearch;
+
+function clearCitySearch(){
+  citySearch?.abort();
+  citySearch = undefined;
+  $('searchResults').hidden = true;
+}
+
+function setSearchOpen(open){
+  const toggle = $('searchToggle');
+  $('searchArea').hidden = !open;
+  toggle.setAttribute('aria-expanded', String(open));
+  if(open){
+    $('cityInput').focus({preventScroll: true});
+  }else{
+    clearCitySearch();
+    toggle.focus({preventScroll: true});
+  }
+}
+
+function cityResult(city, selectedPlace){
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'result-item';
+  const name = document.createElement('strong');
+  name.textContent = city.name;
+  const detail = document.createElement('span');
+  detail.textContent = [city.admin1, city.country].filter(Boolean).join(', ');
+  button.append(name, detail);
+  button.addEventListener('click', () => {
+    stopGPS();
+    place = selectedPlace;
+    save('ns_place', place);
+    $('cityInput').value = '';
+    setSearchOpen(false);
+    loadTimings();
+  });
+  return button;
+}
+
+async function searchCities(event){
+  event.preventDefault();
+  const input = $('cityInput');
+  const query = input.value.trim();
+  if(query.length < 2) return;
+  input.blur();
+  clearCitySearch();
+
+  const results = $('searchResults');
+  results.hidden = false;
+  if(/^(le[\s-]+)?locle$/i.test(query)){
+    results.replaceChildren(cityResult({name:'Le Locle', admin1:'Neuchâtel', country:t('switzerland')}, DEFAULT));
+    return;
+  }
+
+  results.textContent = t('searchLoading');
+  const request = new AbortController();
+  citySearch = request;
+  const timeout = setTimeout(() => request.abort(), 8000);
   try{
-    const response=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=${appLanguage}&format=json`);
-    if(!response.ok)throw Error();const data=await response.json();results.replaceChildren();
-    if(!data.results?.length){results.textContent=t('searchEmpty');return}
-    for(const city of data.results){
-      const btn=document.createElement('button');btn.type='button';btn.className='result-item';
-      const name=document.createElement('strong');name.textContent=city.name;
-      const sub=document.createElement('span');sub.textContent=[city.admin1,city.country].filter(Boolean).join(', ');
-      btn.append(name,sub);btn.addEventListener('click',()=>{
-        stopGPS();place={name:[city.name,city.country].filter(Boolean).join(', '),latitude:city.latitude,longitude:city.longitude,timezone:city.timezone||'UTC'};
-        save('ns_place',place);$('cityInput').value='';results.hidden=true;$('searchArea').hidden=true;$('searchToggle').setAttribute('aria-expanded','false');loadTimings();
-      });results.append(btn);
+    const params = new URLSearchParams({name:query, count:'8', language:appLanguage, format:'json'});
+    const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params}`, {signal:request.signal});
+    if(!response.ok) throw Error('City search failed');
+    const data = await response.json();
+    if(citySearch !== request) return;
+    if(!data.results?.length){
+      results.textContent = t('searchEmpty');
+      return;
     }
-  }catch{results.textContent=t('searchError')}
+    results.replaceChildren(...data.results.map(city => cityResult(city, {
+      name:[city.name, city.country].filter(Boolean).join(', '),
+      latitude:city.latitude, longitude:city.longitude, timezone:city.timezone || 'UTC'
+    })));
+  }catch{
+    if(citySearch === request) results.textContent = t('searchError');
+  }finally{
+    clearTimeout(timeout);
+    if(citySearch === request) citySearch = undefined;
+  }
 }
 function distanceKm(a,b){const r=Math.PI/180,dlat=(b.latitude-a.latitude)*r,dlon=(b.longitude-a.longitude)*r;const x=Math.sin(dlat/2)**2+Math.cos(a.latitude*r)*Math.cos(b.latitude*r)*Math.sin(dlon/2)**2;return 12742*Math.asin(Math.min(1,Math.sqrt(x)))}
 function stopGPS(){if(watchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(watchId);watchId=null;save('ns3_follow_gps',false);$('gpsButton').textContent='📍 GPS'}
@@ -585,7 +647,8 @@ $('tajweedToggle').addEventListener('change', event => {
   save('ns_tajweed', event.target.checked);
   if(quranChapters.length) openQuran();
 });
-$('searchToggle').addEventListener('click',()=>{const show=$('searchArea').hidden;$('searchArea').hidden=!show;$('searchToggle').setAttribute('aria-expanded',String(show));if(show)$('cityInput').focus()});
+$('searchToggle').addEventListener('click',()=>setSearchOpen($('searchArea').hidden));
+$('cityInput').addEventListener('input', clearCitySearch);
 $('searchForm').addEventListener('submit',searchCities);
 $('gpsButton').addEventListener('click',startGPS);
 $('compassButton').addEventListener('click',activateCompass);

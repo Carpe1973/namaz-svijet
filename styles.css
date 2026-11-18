@@ -170,3 +170,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
 .verse-translation { margin: 8px 0 0; color: #fff1d3; }
 .verse-notes { margin-top: 6px; color: #eadbb8; font-size: 12px; }
 .verse-notes p { white-space: pre-line; }
+
+@media (any-pointer: coarse) {
+  /* iOS magnifies form fields with smaller text when the keyboard opens. */
+  .search-form input { font-size: 16px; }
+}
