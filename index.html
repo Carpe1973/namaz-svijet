@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="bs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#130c23">
+  <meta name="description" content="Namaska vremena, početak i kraj sabaha i pravac kible prema lokaciji.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css?v=3.1">
+  <title>Namaz Svijet</title>
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <div class="identity"><span class="brand-mark" aria-hidden="true">☪</span><div><strong>Namaz Svijet</strong><small>Namaska vremena širom svijeta</small></div></div>
+    <button type="button" class="icon-button" id="settingsButton" aria-label="Postavke" title="Postavke">⚙</button>
+  </header>
+  <main>
+    <section id="timesView" class="view" aria-label="Namaska vremena">
+      <section class="next-panel" aria-label="Sljedeći namaz">
+        <div class="next-head"><span>SLJEDEĆI NAMAZ</span><span id="localClock">--:--</span></div>
+        <div class="next-row"><div><h1 id="nextName">Učitavanje…</h1><span id="nextTime">—</span></div><strong id="countdown" aria-label="Preostalo vrijeme">--:--:--</strong></div>
+      </section>
+      <section class="place-panel" aria-label="Lokacija">
+        <div class="place-row"><span class="place-icon" aria-hidden="true">⌖</span><div class="place-details"><strong id="placeName">Le Locle, Švicarska</strong><small id="timezoneName">Učitavanje…</small></div><button class="chip" id="gpsButton" type="button">📍 GPS</button><button class="chip icon-only" id="searchToggle" type="button" aria-label="Pretraži grad" aria-expanded="false">⌕</button></div>
+        <div id="searchArea" hidden><form id="searchForm" class="search-form"><input id="cityInput" type="search" placeholder="Grad bilo gdje u svijetu…" aria-label="Naziv grada" autocomplete="off" required><button type="submit">Traži</button></form><div id="searchResults" class="search-results" hidden></div></div>
+      </section>
+      <div class="date-line"><span id="gregorianDate">—</span><span id="hijriDate">—</span></div>
+      <section class="times-grid" aria-label="Dnevna namaska vremena">
+        <article class="prayer-card fajr" data-prayer="Fajr"><div class="prayer-label">☾ <span>Sabah</span></div><div class="prayer-time" id="timeFajr">--:--</div><div class="prayer-extra">Kraj <b id="fajrEnd">--:--</b></div></article>
+        <article class="prayer-card secondary" data-prayer="Sunrise"><div class="prayer-label">☀ <span>Izlazak</span></div><div class="prayer-time" id="timeSunrise">--:--</div><div class="prayer-extra">Kraj sabaha</div></article>
+        <article class="prayer-card" data-prayer="Dhuhr"><div class="prayer-label">◈ <span>Podne</span></div><div class="prayer-time" id="timeDhuhr">--:--</div></article>
+        <article class="prayer-card" data-prayer="Asr"><div class="prayer-label">✧ <span>Ikindija</span></div><div class="prayer-time" id="timeAsr">--:--</div></article>
+        <article class="prayer-card" data-prayer="Maghrib"><div class="prayer-label">◒ <span>Akšam</span></div><div class="prayer-time" id="timeMaghrib">--:--</div></article>
+        <article class="prayer-card" data-prayer="Isha"><div class="prayer-label">✦ <span>Jacija</span></div><div class="prayer-time" id="timeIsha">--:--</div></article>
+      </section>
+      <p class="source-note" id="sourceNote">Vremena su proračun, a ne službeni raspored džamije.</p>
+    </section>
+    <section id="qiblaView" class="view qibla-view" aria-label="Pravac kible" hidden>
+      <div class="qibla-intro"><h1>🕋 Pravac kible</h1><p id="qiblaPlace">Le Locle, Švicarska</p></div>
+      <div class="compass-wrap"><div class="compass" id="compass" role="img" aria-label="Kompas za kiblu">
+        <div class="compass-ring"></div>
+        <div class="north-indicator" id="northIndicator"><span>N</span></div>
+        <div class="qibla-pointer" id="qiblaPointer"><span class="pointer-tip"></span><span class="pointer-shaft"></span></div>
+        <div class="compass-center">🕋</div>
+      </div></div>
+      <div class="bearing-info"><strong id="qiblaDegrees">—°</strong><span id="qiblaDirection">od geografskog sjevera</span></div>
+      <button class="primary-button" type="button" id="compassButton">🧭 Uključi kompas</button>
+      <p class="compass-status" id="compassStatus" role="status">Bez senzora strelica pokazuje pravac u odnosu na sjever, a ne smjer u kojem držiš telefon.</p>
+      <p class="qibla-note">Za precizniji smjer udalji telefon od metala i magneta. Senzor može zahtijevati dozvolu i kalibraciju.</p>
+    </section>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </main>
+  <nav class="bottom-nav" aria-label="Glavna navigacija"><button id="timesTab" type="button" class="tab active" aria-current="page">☪ <span>Namazi</span></button><button id="qiblaTab" type="button" class="tab">🧭 <span>Kibla</span></button></nav>
+</div>
+<dialog id="settingsDialog">
+  <div class="settings">
+    <div class="settings-heading"><h2>⚙ Postavke</h2><button type="button" class="close-button" id="closeSettings" aria-label="Zatvori">✕</button></div>
+    <label>Metoda računanja<select id="methodSelect"><option value="3">Muslim World League (MWL)</option><option value="13">Diyanet – Turska</option><option value="2">ISNA – Sjeverna Amerika</option><option value="4">Umm al-Qura – Mekka</option><option value="5">Egipatska metoda</option><option value="15">Moonsighting Committee</option></select></label>
+    <label>Ikindija (mezheb)<select id="schoolSelect"><option value="0">Standard</option><option value="1">Hanefijski</option></select></label>
+    <p class="settings-hint">Proračun nije uvijek jednak vremenima lokalne džamije. Korekcije minuta važe samo za izabranu lokaciju.</p>
+    <details><summary>Korekcije vremena (minute)</summary><div class="offsets" id="offsets"></div><button type="button" class="secondary-button" id="resetOffsets">Poništi korekcije</button></details>
+    <details><summary>Unesi raspored džamije za danas</summary><p class="settings-hint" id="manualDateLabel">Ručno unijeta vremena važe samo za ovaj datum i lokaciju. Unosi samo provjerene podatke.</p><label>Naziv džamije / izvor<input type="text" id="mosqueName" maxlength="80" placeholder="Npr. Al-Badr"></label><div class="manual-times" id="manualTimes"></div><button type="button" class="secondary-button" id="clearManual">Ukloni ručni raspored</button></details>
+    <button type="button" class="primary-button save-button" id="saveSettings">Sačuvaj postavke</button>
+  </div>
+</dialog>
+<script src="./app.js?v=3.1" defer></script>
+</body>
+</html>
