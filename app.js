@@ -7,7 +7,18 @@ const KEYS=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'];
 
 const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:'Europe/Zurich'};
 const AL_BADR_URL='https://mawaqit.net/fr/mosquee-al-badr-le-locle';
-const AL_BADR_GPS_RADIUS_KM=1.5;
+const localMosques = [
+  {name: 'Al-Badr', latitude: 47.0520851, longitude: 6.7489249, url: AL_BADR_URL, calendar: AL_BADR_2026},
+  {name: 'CCI de La Chaux-de-Fonds', latitude: 47.101633789772, longitude: 6.8250626550335, url: 'https://mawaqit.net/fr/ccicdf', calendar: CCI_2026}
+];
+function nearestMosque(position){
+  let nearest = null, limit = 10;
+  for(const mosque of localMosques){
+    const km = distanceKm(position, mosque);
+    if(km <= limit){nearest = mosque; limit = km}
+  }
+  return nearest;
+}
 const QURAN_SOURCE = 'https://quran-json.risanb.com';
 const TAJWEED_SOURCE = 'https://api.quran.com/api/v4/quran/verses/uthmani_tajweed';
 const VIEWS = ['times', 'qibla', 'schedule', 'quran'];
@@ -22,12 +33,13 @@ const tajweedColours = {
   idgham_mutajanisayn: 'nasal', idgham_mutaqaribayn: 'nasal', ikhafa: 'nasal', ikhafa_shafawi: 'nasal', iqlab: 'nasal',
   qalaqah: 'echo'
 };
-function usesAlBadr(){
-  const name=place.name.split(',')[0].trim().toLowerCase().replace(/-/g,' ');
-  return (name==='le locle' && place.timezone===DEFAULT.timezone)
-    || (usesGpsPlace() && distanceKm(place,DEFAULT)<=AL_BADR_GPS_RADIUS_KM);
+function selectedMosque(){
+  if(usesGpsPlace()) return nearestMosque(place);
+  const name = place.name.split(',')[0].trim().toLowerCase().replace(/-/g,' ');
+  return name === 'le locle' && place.timezone === DEFAULT.timezone ? localMosques[0] : null;
 }
-function prayerTimezone(){return usesAlBadr()?DEFAULT.timezone:(place.timezone||'UTC')}
+function mosqueLabel(){return selectedMosque() === localMosques[0] ? t('alBadr') : selectedMosque()?.name}
+function prayerTimezone(){return selectedMosque()?DEFAULT.timezone:(place.timezone||'UTC')}
 const pad=n=>String(n).padStart(2,'0');
 const saved=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
@@ -35,7 +47,7 @@ const languageCodes = Object.keys(APP_LANGUAGES);
 let appLanguage = saved('ns_language', 'bs');
 if(!languageCodes.includes(appLanguage)) appLanguage = 'bs';
 const t = key => UI_TEXT[key][languageCodes.indexOf(appLanguage)];
-const placeDisplayName = () => usesGpsPlace() ? t('gpsLocation') : place.name === DEFAULT.name ? `Le Locle, ${t('switzerland')}` : place.name;
+const placeDisplayName = () => usesGpsPlace() ? (mosqueLabel() || t('gpsLocation')) : place.name === DEFAULT.name ? `Le Locle, ${t('switzerland')}` : place.name;
 const usesGpsPlace = () => place.name === 'Moja GPS lokacija';
 let place=saved('ns_place',DEFAULT),method=String(saved('ns_method','3')),school=String(saved('ns_school','0'));
 let dayData=null,tomorrowData=null,lastDate='',busy=false,requestId=0,watchId=null,compassActive=false,heading=null;
@@ -59,7 +71,7 @@ function offsets(){return saved(offsetKey(),{})}
 function manual(p){return saved(manualKey(p),null)}
 function adjusted(k,raw){const t=cleanTime(raw);if(!t)return null;const [h,m]=t.split(':').map(Number),delta=Number(offsets()[k]||0);const mins=((h*60+m+delta)%1440+1440)%1440;return `${pad(Math.floor(mins/60))}:${pad(mins%60)}`}
 function displayTime(k,data,p){
-  if(usesAlBadr())return cleanTime(data?.timings?.[k]);
+  if(selectedMosque())return cleanTime(data?.timings?.[k]);
   const fromManual=manual(p)?.times?.[k];return cleanTime(fromManual)||adjusted(k,data?.timings?.[k])}
 function bearing(lat,lon){const r=Math.PI/180,phi=lat*r,d=(39.826206-lon)*r,kaaba=21.422487*r;return (Math.atan2(Math.sin(d),Math.cos(phi)*Math.tan(kaaba)-Math.sin(phi)*Math.cos(d))/r+360)%360}
 function direction(d){return t('directions')[Math.round(d/45)%8]}
@@ -165,10 +177,10 @@ async function renderSchedule(){
   const hasMissingTimes = results.some(({value}, index) => KEYS.some(key => !displayTime(key, value, dates[index])));
   panelMessage('scheduleStatus', hasMissingTimes ? t('scheduleMissing') : '');
   days.replaceChildren(...dates.map((date, index) => scheduleCard(date, results[index].value)));
-  if(usesAlBadr()){
+  if(selectedMosque()){
     const link = document.createElement('a');
-    link.href = AL_BADR_URL;
-    link.textContent = t('alBadr');
+    link.href = selectedMosque().url;
+    link.textContent = mosqueLabel();
     source.append(t('source') + ' · ', link);
   }else{
     source.textContent = `${t('source')} · AlAdhan, ${t('adjustments')}`;
@@ -340,8 +352,8 @@ async function openQuran(){
   }
 }
 async function timings(p){
-  if(usesAlBadr()){
-    const row=typeof AL_BADR_2026==='undefined'?null:AL_BADR_2026[keyOf(p)];
+  if(selectedMosque()){
+    const row=selectedMosque().calendar[keyOf(p)];
     const timings=row?Object.fromEntries(KEYS.map((key,i)=>[key,row[i]])):null;
     return {timings};
   }
@@ -395,7 +407,7 @@ function resetCountdown(message){
 function renderDay(){
   if(!dayData)return;
   const p=zoned(new Date(),prayerTimezone());
-  const alBadr=usesAlBadr(),m=alBadr?null:manual(p);
+  const alBadr=selectedMosque(),m=alBadr?null:manual(p);
   $('gregorianDate').textContent=dateText(p);
   $('hijriDate').textContent=hijriText(dayData.date?.hijri);
   for(const k of KEYS)$('time'+k).textContent=displayTime(k,dayData,p)||'--:--';
@@ -404,8 +416,8 @@ function renderDay(){
   if(alBadr){
     $('timezoneName').textContent=DEFAULT.timezone;
     const link=document.createElement('a');
-    link.href=AL_BADR_URL;
-    link.textContent=t('alBadr');
+    link.href=selectedMosque().url;
+    link.textContent=mosqueLabel();
     source.replaceChildren(dayData.timings?t('source') + ' · ':t('dateMissing') + ' · ',link);
   }else{
     $('timezoneName').textContent=`${place.timezone} · ${$('methodSelect').selectedOptions[0].textContent.split(' – ')[0]}`;
@@ -420,7 +432,7 @@ function updateCountdown(){
   const now=new Date(),timezone=prayerTimezone(),p=zoned(now,timezone),key=keyOf(p);
   $('localClock').textContent=`${t('local')} ${pad(p.hour)}:${pad(p.minute)}`;
   if(key!==lastDate){if(!busy)loadTimings();return}
-  if(usesAlBadr()&&!dayData.timings){resetCountdown(t('missing'));return}
+  if(selectedMosque()&&!dayData.timings){resetCountdown(t('missing'));return}
   const fajr=displayTime('Fajr',dayData,p),sunrise=displayTime('Sunrise',dayData,p);
   let next;
   if(fajr&&sunrise){const f=localEpoch(p,fajr,timezone),s=localEpoch(p,sunrise,timezone);if(now.getTime()>=f&&now.getTime()<s)next={key:'Fajr',name:t('fajrEnd'),time:s,label:`${t('Sunrise')} · ${sunrise}`}}
@@ -524,7 +536,7 @@ function startGPS(){
   watchId=navigator.geolocation.watchPosition(pos=>{
     const fresh={name:'Moja GPS lokacija',latitude:pos.coords.latitude,longitude:pos.coords.longitude,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'};
     if(!usesGpsPlace()||distanceKm(place,fresh)>2
-      || (distanceKm(place,DEFAULT)<=AL_BADR_GPS_RADIUS_KM)!==(distanceKm(fresh,DEFAULT)<=AL_BADR_GPS_RADIUS_KM)){place=fresh;save('ns_place',place);loadTimings()}
+      || nearestMosque(place)!==nearestMosque(fresh)){place=fresh;save('ns_place',place);loadTimings()}
     else status('');
     save('ns3_follow_gps',true);$('gpsButton').textContent='📍 ON';
   },err=>{stopGPS();status(err.code===1?t('locationDenied'):t('locationError'))},{enableHighAccuracy:false,maximumAge:120000,timeout:20000});
@@ -540,7 +552,7 @@ function makeManual(){
   for(const k of KEYS){const label=document.createElement('label');label.textContent=t(k);const input=document.createElement('input');input.type='time';input.value=cleanTime(record.times?.[k])||'';input.dataset.manual=k;label.append(input);div.append(label)}
 }
 function saveSettings(){
-  if(usesAlBadr())return;
+  if(selectedMosque())return;
   const newOffsets={};for(const el of document.querySelectorAll('[data-offset]')){const n=Number(el.value);if(!Number.isFinite(n)||n < -120||n>120){status(t('offsetError'));return}newOffsets[el.dataset.offset]=Math.round(n)}
   const p=zoned(new Date(),place.timezone),times={};for(const el of document.querySelectorAll('[data-manual]')){if(el.value)times[el.dataset.manual]=el.value}
   const hasManual=Object.keys(times).length>0;
@@ -653,9 +665,10 @@ $('searchForm').addEventListener('submit',searchCities);
 $('gpsButton').addEventListener('click',startGPS);
 $('compassButton').addEventListener('click',activateCompass);
 $('settingsButton').addEventListener('click',()=>{
-  const alBadr=usesAlBadr();
+  const alBadr=selectedMosque();
   $('calculationSettings').hidden=alBadr;
   $('alBadrSettings').hidden=!alBadr;
+  if(alBadr) $('alBadrSettings').textContent=t('source')+' · '+mosqueLabel();
   if(!alBadr){makeOffsets();makeManual()}
   $('settingsDialog').showModal();
 });
