@@ -65,6 +65,11 @@ function bearing(lat,lon){const r=Math.PI/180,phi=lat*r,d=(39.826206-lon)*r,kaab
 function direction(d){return t('directions')[Math.round(d/45)%8]}
 function dateText(p){
   const date = new Date(Date.UTC(p.year, p.month - 1, p.day));
+  if(appLanguage === 'bs'){
+    const weekdays = ['ned', 'pon', 'uto', 'sri', 'čet', 'pet', 'sub'];
+    const months = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+    return `${weekdays[date.getUTCDay()]}, ${p.day}. ${months[p.month - 1]} ${p.year}.`;
+  }
   return new Intl.DateTimeFormat(appLanguage, {weekday:'short', day:'numeric', month:'short', year:'numeric', timeZone:'UTC'}).format(date);
 }
 function hijriText(h){return h?`${h.day}. ${h.month?.en||''} ${h.year}. h.g.`:'—'}
