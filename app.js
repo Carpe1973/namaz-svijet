@@ -124,7 +124,7 @@ function renderDay(){
     $('timezoneName').textContent=DEFAULT.timezone;
     const link=document.createElement('a');
     link.href=AL_BADR_URL;
-    link.textContent='Džamija Al-Badr (Mawaqit)';
+    link.textContent='Džamija Al-Badr';
     source.replaceChildren(dayData.timings?'Izvor · ':'Raspored za ovaj datum nije dostupan · ',link);
   }else{
     $('timezoneName').textContent=`${place.timezone} · ${$('methodSelect').selectedOptions[0].textContent.split(' – ')[0]}`;
