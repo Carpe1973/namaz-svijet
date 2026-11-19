@@ -186,6 +186,30 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
 }
 
 #quranView { --paper: #fffdf6; --ink: #191810; --rule: #c8bda6; --frame: #267c83; --gold: #a97831; --nasal: #097b42; --madd: #bb263e; --short: #ad580b; --echo: #087aa4; --silent: #68675e; }
+
+/* Quran reader themes: only page palette changes, original text and tajweed preserved. */
+#quranView[data-paper="cream"] {
+  --paper:#fff5df; --ink:#201a13; --rule:#cbbd9e; --frame:#167057; --gold:#b4873b;
+  --nasal:#08763b; --madd:#b82842; --short:#a94b12; --echo:#1768a4; --silent:#716b62;
+}
+#quranView[data-paper="soft-green"] {
+  --paper:#e6f0db; --ink:#18231b; --rule:#a9b99f; --frame:#3f7650; --gold:#a78846;
+  --nasal:#087338; --madd:#b32541; --short:#a54d11; --echo:#126b9c; --silent:#68746a;
+}
+#quranView[data-paper="olive"] {
+  --paper:#dce2ba; --ink:#1d2518; --rule:#a5ae83; --frame:#51713e; --gold:#a88a3f;
+  --nasal:#08713a; --madd:#b3223c; --short:#a45112; --echo:#126a99; --silent:#69715f;
+}
+#quranView[data-paper="navy"] {
+  --paper:#101f32; --ink:#f8f5e9; --rule:#536579; --frame:#b2a06b; --gold:#e2c780;
+  --nasal:#82da9d; --madd:#ff9297; --short:#ffc27e; --echo:#7cd0fa; --silent:#b6c4d3;
+}
+#quranView[data-paper="charcoal"] {
+  --paper:#242326; --ink:#f5f0e6; --rule:#625e5c; --frame:#a98b61; --gold:#dfbb7b;
+  --nasal:#99db9c; --madd:#ff9299; --short:#ffc18d; --echo:#8dd0ef; --silent:#bcb5ae;
+}
+#paperTheme { cursor:pointer; }
+#quranChapter { transition: background-color .18s ease, color .18s ease, border-color .18s ease; }
 #quranView[data-paper="night"] { --paper: #0c1511; --ink: #faf7ed; --rule: #526459; --frame: #788e7e; --gold: #c5c8ad; --nasal: #8bd896; --madd: #ff7e83; --short: #ffb567; --echo: #7ecbf5; --silent: #aeb7ae; }
 #quranChapter {
   position: relative; border: 3px double var(--frame); border-radius: 5px;
@@ -213,7 +237,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
   font: 400 .57em/1 'Amiri Quran', serif;
 }
 .continuous #surahVerses {
-  direction: rtl; text-align: justify; font: calc(30px * var(--reading-scale, 1))/2.25 'Amiri Quran', serif;
+  direction: rtl; text-align: right; letter-spacing: normal; word-spacing: normal; font: calc(30px * var(--reading-scale, 1))/2.25 'Amiri Quran', serif;
   background: repeating-linear-gradient(to bottom, transparent 0 calc(2.25em - 1px), var(--rule) calc(2.25em - 1px) 2.25em);
 }
 .continuous #surahVerses li, .continuous #surahVerses .arabic-verse { display: inline; margin: 0; padding: 0; border: 0; font: inherit; }
