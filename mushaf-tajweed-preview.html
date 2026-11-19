@@ -30,13 +30,13 @@ label{font-size:13px;font-weight:600}
 <select id="theme" aria-label="Pozadina"><option value="green">Zelena</option><option value="cream">Krem</option><option value="night">Noćna</option></select></div>
 <div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
 <p id="message" role="status"></p>
-<p class="note">Eksperimentalni QCF V4 Tajweed prikaz sa stvarnih 15 redova. Ako font ili podaci ne mogu da se učitaju, prikazuje se izvorna slika stranice. Font dolazi sa Quran Foundation servera; korištenje i distribucija zavise od njihovih uslova. Podaci o rasporedu: quran-library (MIT). Ovaj pregled nije zamjena za provjeren Mushaf.</p>
+<p class="note">Eksperimentalni QCF4 prikaz sa izvornim redovima (boje tedžvida još nisu uključene). Ako font ili podaci ne mogu da se učitaju, prikazuje se izvorna slika stranice. Font dolazi sa Quran Foundation servera; korištenje i distribucija zavise od njihovih uslova. Podaci o rasporedu: quran-qcf4 (MIT za JSON). Ovaj pregled nije zamjena za provjeren Mushaf.</p>
 </main>
 <script>
 'use strict';
 const el=id=>document.getElementById(id);
-const root='https://raw.githubusercontent.com/ahmadmounir/quran-library/main/data/mushaf/pages/page-';
-const fontRoot='https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/p';
+const root='https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/';
+const fontRoot='https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2/';
 let current=4,run=0,face=null;
 try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
 function fallback(page,reason){
@@ -59,11 +59,12 @@ async function load(page){
   if(!response.ok)throw Error('Podaci za stranicu nisu dostupni.');
   const data=await response.json();
   if(!Array.isArray(data.lines)||!data.lines.length||!data.lines.every(line=>Array.isArray(line.words)))throw Error('Neispravni podaci o redovima.');
-  // Use the QCF V4 COLRv1 font only for matching code_v2 glyphs.
-  const name='QCF-v4-page-'+page;
+  // QCF4 data and QCF4 font must use the same glyph encoding.
+  const name=data.font;
+  if(!/^QCF4_Hafs_\d{2}$/.test(name))throw Error('Nepoznat font stranice.');
   let loaded=document.fonts.check('20px "'+name+'"');
   if(!loaded){
-   const loadedFace=new FontFace(name,'url('+fontRoot+page+'.woff2)',{style:'normal',weight:'400'});
+   const loadedFace=new FontFace(name,'url('+fontRoot+name+'_W.woff2)',{style:'normal',weight:'400'});
    await loadedFace.load();
    if(id!==run)return;
    document.fonts.add(loadedFace);
@@ -76,15 +77,15 @@ async function load(page){
    const row=document.createElement('div');row.className='qline';
    for(const word of line.words){
     const span=document.createElement('span');span.className='qword';
-    // Each glyph is encoded in the code_v2 Quran Complex Font.
-    span.textContent=word.g || '';
+    // Glyph code and font come from the same QCF4 source.
+    span.textContent=word.char || word.text || '';
     span.title=word.text || '';
     row.append(span);
    }
    group.append(row);
   }
   el('lines').append(group);
-  el('message').textContent='QCF Tajweed: '+data.lines.length+' izvornih redova · stranica '+page;
+  el('message').textContent='QCF4: '+data.lines.length+' izvornih redova · stranica '+page;
  }catch(error){if(id!==run)return;fallback(page,error?.message||'Font nije dostupan.');}
 }
 el('prev').onclick=()=>load(current-1);el('next').onclick=()=>load(current+1);
