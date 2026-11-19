@@ -443,3 +443,27 @@ body.quran-mode .bottom-nav #quranSettingsTab::first-letter {font-size:20px;}
   #quranChapter {padding-inline:15px;}
   body.quran-mode .bottom-nav {gap:3px;padding:5px 3px;}
 }
+
+/* v3.16 visibility and layout safeguards; work even when the view-state class is stale. */
+body:has(#quranView:not([hidden])) {background:#f4e6c7;}
+body:has(#quranView:not([hidden])) .app-shell {
+  max-width:740px;padding:0 5px max(4px,env(safe-area-inset-bottom,0px));background:#fff5df;
+}
+body:has(#quranView:not([hidden])) .app-header {display:none!important;}
+body:has(#quranView:not([hidden])) #quranView {background:var(--paper);}
+body:has(#quranView:not([hidden])) .bottom-nav {
+  display:flex!important; flex-wrap:nowrap!important;
+  width:calc(100% - 6px);position:sticky;bottom:max(4px,env(safe-area-inset-bottom,0px));
+  margin:3px;z-index:10;
+}
+body:has(#quranView:not([hidden])) .bottom-nav .tab {
+  display:flex;flex:1 1 0;min-width:0;white-space:normal;
+}
+body:has(#quranView:not([hidden])) .mushaf-header {display:block;}
+body:has(#quranView:not([hidden])) .mushaf-header-row {display:flex;flex-wrap:nowrap;}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  font-size:calc(clamp(22px,5.8vw,30px) * var(--reading-scale,1));
+  line-height:2.35;
+  background-size:auto;
+}
+body:has(#quranView:not([hidden])) #quranChapter .ayah-number {font-size:.57em;}
