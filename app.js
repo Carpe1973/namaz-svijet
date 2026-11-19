@@ -108,6 +108,8 @@ function setView(name){
     if(active) tab.setAttribute('aria-current', 'page');
     else tab.removeAttribute('aria-current');
   }
+  document.body.classList.toggle('quran-mode', name === 'quran');
+  $('quranSettingsTab').hidden = name !== 'quran';
   if(changed) window.scrollTo(0, 0);
   if(name === 'schedule') renderSchedule();
   if(name === 'quran' && $('quranChapter').hidden && !quranLoading) openQuran();
@@ -657,6 +659,19 @@ for(const button of periodButtons){
   });
 }
 $('surahSelect').addEventListener('change', openQuran);
+for(const [id, step] of [['previousSurah', -1], ['nextSurah', 1]]){
+  $(id).addEventListener('click', () => {
+    const selector = $('surahSelect');
+    if(selector.disabled) return;
+    const next = Math.max(1, Math.min(114, Number(selector.value) + step));
+    if(next !== Number(selector.value)){
+      selector.value = String(next);
+      openQuran();
+    }
+  });
+}
+$('quranSettingsTab').addEventListener('click', () => $('settingsButton').click());
+$('quranSettingsTab').hidden = true;
 $('quranRetry').addEventListener('click', openQuran);
 const paperTheme = $('paperTheme'), showMeaning = $('showMeaning');
 const themeChoices = new Set(['cream', 'soft-green', 'olive', 'night', 'navy', 'charcoal']);
