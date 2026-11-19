@@ -854,3 +854,15 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mush
   font:400 21px/1 Georgia,serif;
   padding:0;
 }
+
+
+/* v3.25: center shorter Arabic lines between the Mushaf borders.
+   Preserve RTL joining, natural word spacing, font and tajweed colors. */
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  text-align:center;
+  text-align-last:center;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li:not(.mushaf-page-divider),
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses .arabic-verse {
+  text-align:center;
+}
