@@ -43,7 +43,7 @@ async function fetchMushafPages(chapter){
 }
 function updateMushafPosition(){
   if($('quranView').hidden || !mushafPageMetadata.length) return;
-  const elements = Array.from($('surahVerses').children);
+  const elements = Array.from($('surahVerses').querySelectorAll('li[data-verse]'));
   const threshold = $('quranView').querySelector('.mushaf-header').getBoundingClientRect().bottom + 55;
   let index = 0;
   for(let i=0;i<elements.length;i++){
@@ -370,13 +370,28 @@ async function openQuran(){
     const verses = Array.from({length:chapter.total_verses}, (_, index) =>
       renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language, index + 1));
     $('surahTitle').textContent = chapter.name;
-    $('surahVerses').replaceChildren(...verses);
     mushafPageMetadata = pageInfo.status === 'fulfilled' && Array.isArray(pageInfo.value) ? pageInfo.value : [];
+    const contentWithPages = [];
     for(let i=0;i<verses.length;i++){
       verses[i].dataset.verse=String(i+1);
       const info=mushafPageMetadata[i];
-      if(info) verses[i].dataset.mushafPage=String(info.page);
+      if(info){
+        verses[i].dataset.mushafPage=String(info.page);
+        // A page label marks the first verse that STARTS on that Madinah page.
+        // A long verse can itself span a page break; don't invent word boundaries.
+        if(i===0 || info.page!==mushafPageMetadata[i-1].page){
+          const marker=document.createElement('li');
+          marker.className='mushaf-page-divider';
+          marker.setAttribute('aria-label','Stranica '+info.page+' od 604');
+          const span=document.createElement('span');
+          span.textContent=String(info.page);
+          marker.append(span);
+          contentWithPages.push(marker);
+        }
+      }
+      contentWithPages.push(verses[i]);
     }
+    $('surahVerses').replaceChildren(...contentWithPages);
     if(mushafPageMetadata.length){
       $('mushafCurrentPage').textContent=String(mushafPageMetadata[0].page);
       $('mushafJuz').textContent='Juz '+mushafPageMetadata[0].juz;
