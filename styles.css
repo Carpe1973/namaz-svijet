@@ -856,13 +856,29 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mush
 }
 
 
-/* v3.25: center shorter Arabic lines between the Mushaf borders.
-   Preserve RTL joining, natural word spacing, font and tajweed colors. */
+/* v3.26: Mushaf-style line layout inspired by the reference reader.
+   Balance full RTL lines across the reading width, center the final line,
+   and place delicate guides below the generous Arabic line box.
+   Arabic text, tajweed spans and font are unchanged. */
 body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
-  text-align:center;
+  direction:rtl;
+  text-align:justify;
   text-align-last:center;
+  text-justify:inter-word;
+  word-spacing:normal;
+  letter-spacing:normal;
+  line-height:2.65;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(2.65em - 1px),
+    rgba(101,108,85,.27) calc(2.65em - 1px) 2.65em
+  )!important;
+  background-position:0 .65em;
+  background-size:100% 2.65em;
 }
 body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li:not(.mushaf-page-divider),
 body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses .arabic-verse {
-  text-align:center;
+  text-align:inherit;
+  word-spacing:inherit;
+  letter-spacing:normal;
 }
