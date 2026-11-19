@@ -26,6 +26,42 @@ const SCHEDULE_PERIODS = {today: [0], tomorrow: [1], week: [0, 1, 2, 3, 4, 5, 6]
 let schedulePeriod = 'today', scheduleRequest = 0;
 let quranChapters = [], quranRequest = 0, quranLoading = false;
 let translationCatalog, basmalaRequest;
+let mushafPageMetadata = [];
+let mushafScrollQueued = false;
+async function fetchMushafPages(chapter){
+  const response = await fetch('https://api.alquran.cloud/v1/surah/' + chapter.id);
+  if(!response.ok) throw Error('Mushaf metadata unavailable');
+  const payload = await response.json();
+  const ayahs = payload?.data?.ayahs;
+  if(!Array.isArray(ayahs) || ayahs.length !== chapter.total_verses ||
+     !ayahs.every((ayah,index) => ayah.numberInSurah === index + 1 &&
+       Number.isInteger(ayah.page) && ayah.page >= 1 && ayah.page <= 604 &&
+       Number.isInteger(ayah.juz) && ayah.juz >= 1 && ayah.juz <= 30)){
+    throw Error('Invalid Mushaf page metadata');
+  }
+  return ayahs.map(ayah => ({page:ayah.page, juz:ayah.juz}));
+}
+function updateMushafPosition(){
+  if($('quranView').hidden || !mushafPageMetadata.length) return;
+  const elements = Array.from($('surahVerses').children);
+  const threshold = $('quranView').querySelector('.mushaf-header').getBoundingClientRect().bottom + 55;
+  let index = 0;
+  for(let i=0;i<elements.length;i++){
+    if(elements[i].getBoundingClientRect().top <= threshold) index=i;
+    else break;
+  }
+  const location = mushafPageMetadata[index];
+  if(!location) return;
+  $('mushafCurrentPage').textContent=String(location.page);
+  $('mushafJuz').textContent='Juz '+location.juz;
+  save('ns_mushaf_progress',{chapter:Number($('surahSelect').value),verse:index+1,page:location.page});
+}
+window.addEventListener('scroll',()=>{
+  if(mushafScrollQueued) return;
+  mushafScrollQueued=true;
+  requestAnimationFrame(()=>{mushafScrollQueued=false;updateMushafPosition();});
+},{passive:true});
+
 const tajweedColours = {
   ham_wasl: 'silent', laam_shamsiyah: 'silent', slnt: 'silent',
   madda_normal: 'short', madda_permissible: 'madd', madda_obligatory: 'madd', madda_necessary: 'madd',
@@ -308,7 +344,9 @@ async function openQuran(){
 
     const chapter = quranChapters[Number(select.value) - 1];
     $('mushafPage').textContent = String(chapter.id);
-    $('mushafJuz').textContent = chapter.id <= 2 ? 'Juz 1' : 'Juz';
+    $('mushafJuz').textContent = 'Juz —';
+    $('mushafCurrentPage').textContent = '—';
+    mushafPageMetadata = [];
     const showBasmala = colourEnabled && chapter.id !== 1 && chapter.id !== 9;
     if(showBasmala && !basmalaRequest){
       basmalaRequest = fetchTajweed(quranChapters[0]).then(verses => tajweedVerse(verses[0])).catch(() => {
@@ -316,9 +354,10 @@ async function openQuran(){
         return null;
       });
     }
-    const [plain, translated, coloured, basmala] = await Promise.allSettled([
+    const [plain, translated, pageInfo, coloured, basmala] = await Promise.allSettled([
       fetchQuran(`/text/uthmani/chapters/${chapter.id}.json`),
       fetchTranslation(chapter, language),
+      fetchMushafPages(chapter).catch(()=>null),
       colourEnabled ? fetchTajweed(chapter).then(verses => verses.map(tajweedVerse)) : null,
       showBasmala ? basmalaRequest.then(fragment => fragment?.cloneNode(true)) : null
     ]);
@@ -332,6 +371,17 @@ async function openQuran(){
       renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language, index + 1));
     $('surahTitle').textContent = chapter.name;
     $('surahVerses').replaceChildren(...verses);
+    mushafPageMetadata = pageInfo.status === 'fulfilled' && Array.isArray(pageInfo.value) ? pageInfo.value : [];
+    for(let i=0;i<verses.length;i++){
+      verses[i].dataset.verse=String(i+1);
+      const info=mushafPageMetadata[i];
+      if(info) verses[i].dataset.mushafPage=String(info.page);
+    }
+    if(mushafPageMetadata.length){
+      $('mushafCurrentPage').textContent=String(mushafPageMetadata[0].page);
+      $('mushafJuz').textContent='Juz '+mushafPageMetadata[0].juz;
+    }
+
     $('surahBasmala').replaceChildren(...(highlights && basmala.value ? [basmala.value] : []));
     $('surahBasmala').hidden = !highlights || !basmala.value;
     $('tajweedCredit').hidden = !highlights;
@@ -345,6 +395,7 @@ async function openQuran(){
     $('quranNotice').textContent = data?.notice || '';
     $('quranLicense').hidden = !data?.notice;
     $('quranChapter').hidden = false;
+    requestAnimationFrame(updateMushafPosition);
     const messages = [];
     if(colourEnabled && !highlights) messages.push(t('tajweedError'));
     if(!translation) messages.push(t('translationError'));
@@ -660,7 +711,7 @@ for(const button of periodButtons){
     renderSchedule();
   });
 }
-$('surahSelect').addEventListener('change', openQuran);
+$('surahSelect').addEventListener('change', () => { openQuran(); $('quranView').scrollIntoView({block:'start'}); });
 for(const [id, step] of [['previousSurah', -1], ['nextSurah', 1]]){
   $(id).addEventListener('click', () => {
     const selector = $('surahSelect');
@@ -669,6 +720,7 @@ for(const [id, step] of [['previousSurah', -1], ['nextSurah', 1]]){
     if(next !== Number(selector.value)){
       selector.value = String(next);
       openQuran();
+      $('quranView').scrollIntoView({block:'start'});
     }
   });
 }
