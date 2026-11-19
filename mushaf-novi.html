@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="bs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#063f2d"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>Kur’an · Namaz Svijet</title>
+<style>
+@font-face{font-family:'Amiri Quran';src:url('./fonts/amiri-quran.woff') format('woff');font-display:swap}
+*{box-sizing:border-box}body{margin:0;background:#eee3c9;color:#143c2f;font:16px system-ui,-apple-system,sans-serif}
+header{position:sticky;top:0;z-index:9;background:#03432e;color:#fff0c8;border-bottom:3px double #c5a15d;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header a{color:inherit;text-decoration:none;font-weight:650}header strong{font-size:17px}
+main{max-width:760px;margin:auto;padding:12px 8px 50px}
+.controls{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+button,select,input{font:inherit;padding:9px;border:1px solid #b18d48;border-radius:10px;background:#f8eac7;color:#153c2f}
+button{cursor:pointer}button:disabled{opacity:.4}input[type=number]{width:78px;text-align:center}
+.reader{--ink:#12291e;--paper:#eef4e4;--rule:#afbc9c;position:relative;margin:auto;max-width:650px;padding:20px 12px;background:var(--paper);border:6px double #b79040;box-shadow:inset 0 0 0 4px #06543c;color:var(--ink);min-height:360px}
+.reader[data-theme=night]{--ink:#fff8e4;--paper:#112018;--rule:#415646}
+.reader[data-theme=cream]{--paper:#fff1d2;--rule:#dac49a}
+.reader h1{text-align:center;font:600 20px Georgia,serif;margin:0 0 8px;color:var(--ink)}
+#lines{direction:rtl;display:flex;flex-direction:column;gap:0}
+.qline{direction:rtl;display:block;text-align:center;width:100%;min-height:3.15em;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(17px,4.3vw,28px);font-weight:400;line-height:1.55}
+.qline:last-child{border-bottom:0}.qword{display:inline-block;text-align:center;font-family:'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle;position:relative;top:1.06em}
+.ayah-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:1.9em;height:1.9em;min-width:1.9em;border:2px double #ad873d;border-radius:50%;color:#15472f;background:#fff5d5;box-shadow:inset 0 0 0 2px #e3c785;font:400 .65em/1 'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle;position:relative;top:1.11em;padding:0}
+.hizb-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#b88c31;font:400 1.15em/1 'Amiri Quran','Geeza Pro',serif}
+
+#fallback{display:none;width:100%;height:auto;max-height:calc(100dvh - 245px);object-fit:contain}
+#message{min-height:30px;text-align:center;font-size:13px;margin:9px auto;color:#355a49}
+.note{max-width:650px;margin:14px auto;font-size:12px;line-height:1.5;color:#57675c}
+body:has(.reader[data-theme=night]){background:#182019;color:#e9ead9}
+body:has(.reader[data-theme=night]) #message,body:has(.reader[data-theme=night]) .note{color:#c3d0bc}
+label{font-size:13px;font-weight:600}
+@media(max-width:420px){.reader{padding:13px 7px}.qline{font-size:clamp(15px,4.5vw,21px)}.controls{gap:5px}}
+body{overflow-x:hidden}main,.reader,#lines{min-width:0;max-width:100%}.qline{max-width:100%;overflow:visible}.ayah-marker{margin-inline:.04em} .ayah-digits{display:block;line-height:1;transform:translateY(-.38em)}
+
+.reader-tools{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;padding:7px 4px;color:#164733;font-size:13px}
+.reader-tools label{display:inline-flex;align-items:center;gap:5px}
+.reader-tools input[type=range]{width:100px;accent-color:#09663e;padding:0}
+.legend{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;font-size:11px;margin:4px auto 10px}
+.legend span{padding:3px}
+.tajweed-short{color:#009c50}.tajweed-madd{color:#b66715}.tajweed-nasal{color:#037fb5}.tajweed-echo{color:#c42c5b}.tajweed-silent{color:#728078}
+.reader[data-theme=night] .tajweed-short{color:#42d783}
+.reader[data-theme=night] .tajweed-madd{color:#f1a350}
+.reader[data-theme=night] .tajweed-nasal{color:#5eb9ec}
+.reader[data-theme=night] .tajweed-echo{color:#ff6b99}
+.nav{position:sticky;bottom:0;z-index:8;display:flex;gap:5px;background:#004830;border:3px double #dab86b;border-radius:21px;padding:7px;margin:10px auto;max-width:650px;box-shadow:0 3px 12px #0004}
+.nav a{flex:1;text-align:center;border:1px solid #d0aa5a;border-radius:16px;padding:8px 2px;text-decoration:none;background:linear-gradient(#076044,#003e2b);color:#ffefce;font:14px Georgia,serif}
+.nav a.current{background:linear-gradient(#ffedb8,#dcb25c);color:#143623}
+.nav a span{display:block;font:23px system-ui;margin-bottom:5px}
+body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
+@media(max-width:390px){.nav a{font-size:12px}.legend{font-size:10px}}
+</style></head><body>
+<header><a href="./">❮ Namaz Svijet</a><strong>☪ Kur’an</strong></header>
+<main>
+<div class="controls"><button id="prev" aria-label="Prethodna stranica">❮</button><label for="page">Stranica</label><input id="page" type="number" min="1" max="604" value="4"><span>/ 604</span><button id="next" aria-label="Sljedeća stranica">❯</button>
+<select id="theme" aria-label="Pozadina"><option value="green">Zelena</option><option value="cream">Krem</option><option value="night">Noćna</option></select></div>
+<div class="reader-tools"><label><input type="checkbox" id="tajweed" checked> Tedžvid u boji</label><label for="size">Veličina <output id="percent">100%</output></label><input id="size" type="range" min="70" max="160" step="5" value="100"></div>
+<div class="legend"><span class="tajweed-short">Prirodni medd</span><span class="tajweed-madd">Produženi medd</span><span class="tajweed-nasal">Gunna</span><span class="tajweed-echo">Kalkala</span><span class="tajweed-silent">Neizgovoreni znak</span></div>
+<div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
+<p id="message" role="status"></p>
+<p class="note">Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boja se prikazuje samo kada se arapska riječ potpuno podudara s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
+<nav class="nav"><a href="./?tab=times"><span>☪</span>Namazi</a><a href="./?tab=qibla"><span>🧭</span>Kibla</a><a href="./?tab=schedule"><span>▦</span>Vaktija</a><a class="current" href="./mushaf-novi.html"><span>📖</span>Kur’an</a></nav>
+</main>
+<script>
+'use strict';
+const el=id=>document.getElementById(id);
+const root='https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/';
+let current=4,run=0;
+
+const tajweedClass={
+ ham_wasl:'silent',laam_shamsiyah:'silent',slnt:'silent',
+ madda_normal:'short',madda_permissible:'madd',madda_obligatory:'madd',madda_necessary:'madd',
+ ghunnah:'nasal',idgham_ghunnah:'nasal',idgham_wo_ghunnah:'nasal',idgham_shafawi:'nasal',
+ idgham_mutajanisayn:'nasal',idgham_mutaqaribayn:'nasal',ikhafa:'nasal',ikhafa_shafawi:'nasal',iqlab:'nasal',qalaqah:'echo'
+};
+const tajweedCache=new Map();
+function tokenizeVerse(markup){
+ const t=document.createElement('template');
+ t.innerHTML=markup;
+ const words=[];let pieces=[];
+ const flush=()=>{if(pieces.length){words.push(pieces);pieces=[];}};
+ function visit(node,rule){
+   if(node.nodeType===3){
+     for(const part of node.textContent.split(/(\s+)/u)){
+       if(!part)continue;
+       if(/^\s+$/u.test(part)){flush();continue;}
+       if(pieces.length&&pieces[pieces.length-1].rule===rule)pieces[pieces.length-1].text+=part;
+       else pieces.push({text:part,rule});
+     }
+   }else if(node.nodeType===1){
+     if(node.nodeName==='SPAN'&&node.getAttribute('class')==='end')return;
+     if(node.nodeName!=='TAJWEED'&&node.nodeName!=='SPAN')return;
+     const next=node.nodeName==='TAJWEED' ? tajweedClass[node.getAttribute('class')]||null : rule;
+     for(const child of node.childNodes)visit(child,next);
+   }
+ }
+ for(const node of t.content.childNodes)visit(node,null);
+ flush();return words;
+}
+async function getTajweed(verseKeys){
+ const chapters=[...new Set(verseKeys.map(key=>Number(key.split(':')[0])))];
+ const results=await Promise.all(chapters.map(async n=>{
+   if(!tajweedCache.has(n)){
+     const promise=fetch('https://api.quran.com/api/v4/quran/verses/uthmani_tajweed?chapter_number='+n)
+       .then(r=>{if(!r.ok)throw Error('Tedžvid nije dostupan');return r.json()})
+       .then(j=>{const result=new Map();for(const v of j.verses||[]){
+         if(typeof v.text_uthmani_tajweed==='string'&&v.verse_key)
+           result.set(v.verse_key,tokenizeVerse(v.text_uthmani_tajweed));
+       }return result;});
+     tajweedCache.set(n,promise);
+   }
+   try{return await tajweedCache.get(n)}catch{tajweedCache.delete(n);return new Map()}
+ }));
+ const all=new Map();for(const part of results)for(const [key,value] of part)all.set(key,value);
+ return all;
+}
+function renderTajweedWord(node,word,rules){
+ const position=Number(word.position)-1;
+ const segments=rules?.get(word.verse_key)?.[position];
+ if(!segments || segments.map(s=>s.text).join('')!==word.text){
+   node.textContent=word.text||'';return false;
+ }
+ let colored=false;
+ for(const part of segments){
+   if(!part.rule)node.append(document.createTextNode(part.text));
+   else{const span=document.createElement('span');span.className='tajweed-'+part.rule;
+     span.textContent=part.text;node.append(span);colored=true;}
+ }
+ return colored;
+}
+
+try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
+function fallback(page,reason){
+ el('lines').replaceChildren();el('lines').hidden=true;
+ const image=el('fallback');image.style.display='block';
+ image.src='https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/'+page+'.png';
+ image.alt='Stranica '+page+' (originalna slika)';
+ el('message').textContent=reason+' Prikazana je slika stranice.';
+}
+async function load(page){
+ if(!Number.isInteger(page)||page<1||page>604)return;
+ const id=++run;current=page;el('page').value=page;
+ el('heading').textContent='Stranica '+page+' / 604';el('message').textContent='Učitavanje arapskog teksta…';
+ el('prev').disabled=page===1;el('next').disabled=page===604;
+ el('fallback').style.display='none';el('fallback').removeAttribute('src');el('lines').hidden=false;el('lines').replaceChildren();
+ try{localStorage.setItem('ns_qcf_test_page',String(page))}catch{}
+ try{
+  const url=root+String(page).padStart(3,'0')+'.json';
+  const response=await fetch(url);
+  if(!response.ok)throw Error('Podaci za stranicu nisu dostupni.');
+  const data=await response.json();
+  if(!Array.isArray(data.lines)||!data.lines.length||!data.lines.every(line=>Array.isArray(line.words)))throw Error('Neispravni podaci o redovima.');
+  if(id!==run)return;
+  const group=document.createDocumentFragment();
+  for(const line of data.lines){
+   const row=document.createElement('div');row.className='qline';
+   for(const word of line.words){
+    const span=document.createElement('span');span.className='qword';
+    // QCF markers contain placeholder strings such as V38 and Q.
+    // Display actual verse numbers and quarter-hizb ornaments instead.
+    if(word.type==='end'){
+      const number=Number(String(word.verse_key||'').split(':')[1]);
+      if(!Number.isInteger(number)||number<1||number>286)throw Error('Neispravan broj ajeta.');
+      span.className='ayah-marker';
+      const digits=document.createElement('span');
+      digits.className='ayah-digits';
+      digits.textContent=String(number).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+      span.append(digits);
+      span.setAttribute('aria-label','Ajet '+number);
+    }else if(word.type==='quarter'){
+      span.className='hizb-marker';
+      span.textContent='۞';
+      span.setAttribute('aria-label','Oznaka četvrtine hizba');
+    }else if(word.type==='word'){
+      span.textContent=word.text || '';
+      span.title=word.text || '';
+      span.dataset.verseKey=word.verse_key||'';
+      span.dataset.wordPosition=String(word.position||'');
+    }else{
+      throw Error('Nepoznata oznaka u tekstu.');
+    }
+    row.append(span,document.createTextNode(' '));
+   }
+   group.append(row);
+  }
+  el('lines').append(group);
+  // Each source line remains one visual line; reduce size only when it
+  // exceeds the available phone width, and center the entire line.
+  const fitRows=()=>{
+    el('lines').querySelectorAll('.qline').forEach(row=>{
+      row.style.fontSize='';
+      const available=row.clientWidth;
+      const required=row.scrollWidth;
+      if(available>0 && required>available){
+        const base=parseFloat(getComputedStyle(row).fontSize);
+        row.style.fontSize=(base*Math.min(1,(available-12)/required))+'px';
+      }
+    });
+  };
+  requestAnimationFrame(fitRows);
+  if(document.fonts?.ready)document.fonts.ready.then(()=>{if(id===run)fitRows()});
+
+  el('message').textContent='Stranica '+page+' · '+data.lines.length+' redova';
+  if(el('tajweed').checked){
+    const keys=[...new Set(data.lines.flatMap(line=>line.words.filter(w=>w.type==='word').map(w=>w.verse_key)))];
+    // Colouring is strictly secondary: never block readable Arabic on API failure.
+    getTajweed(keys).then(rules=>{
+      if(id!==run || !el('tajweed').checked)return;
+      let applied=0;
+      const words=data.lines.flatMap(line=>line.words.filter(w=>w.type==='word'));
+      const spans=[...el('lines').querySelectorAll('.qword')];
+      let i=0;
+      for(const line of data.lines)for(const word of line.words)if(word.type==='word'){
+        // Find source word node by its stable verse key and position.
+        const node=spans.find(x=>x.dataset.verseKey===word.verse_key&&x.dataset.wordPosition===String(word.position));
+        if(node && renderTajweedWord(node,word,rules))applied++;
+      }
+      if(applied>0)el('message').textContent='Tedžvid: '+applied+' obojenih riječi · stranica '+page;
+      else el('message').textContent='Tekst je čitljiv; potvrđene tedžvidske boje nisu dostupne za ovu stranicu.';
+    }).catch(()=>{});
+  }
+ }catch(error){if(id!==run)return;fallback(page,error?.message||'Font nije dostupan.');}
+}
+el('prev').onclick=()=>load(current-1);el('next').onclick=()=>load(current+1);
+el('page').onchange=()=>load(Number(el('page').value));
+el('theme').onchange=()=>{el('reader').dataset.theme=el('theme').value;localStorage.setItem('ns_mushaf_theme',el('theme').value);};
+el('tajweed').onchange=()=>{localStorage.setItem('ns_mushaf_tajweed',el('tajweed').checked?'1':'0');load(current)};
+el('size').oninput=()=>{
+ const percent=Number(el('size').value);
+ el('percent').textContent=percent+'%';
+ el('lines').style.zoom=String(percent/100);
+};
+try{const th=localStorage.getItem('ns_mushaf_theme');if(['green','cream','night'].includes(th)){el('theme').value=th;el('reader').dataset.theme=th;}
+ if(localStorage.getItem('ns_mushaf_tajweed')==='0')el('tajweed').checked=false;}catch{}
+window.addEventListener('resize',()=>{const rows=el('lines').querySelectorAll('.qline');for(const row of rows){row.style.fontSize='';const width=row.clientWidth,full=row.scrollWidth;if(width>0&&full>width){row.style.fontSize=(parseFloat(getComputedStyle(row).fontSize)*(width-12)/full)+'px';}}},{passive:true});
+load(current);
+</script></body></html>
