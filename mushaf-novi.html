@@ -45,6 +45,8 @@ body{overflow-x:hidden}main,.reader,#lines{min-width:0;max-width:100%}.qline{max
 .nav a span{display:block;font:23px system-ui;margin-bottom:5px}
 body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 @media(max-width:390px){.nav a{font-size:12px}.legend{font-size:10px}}
+.surah-heading,.surah-bismillah{font-family:'Amiri Quran','Geeza Pro',serif;display:inline-block;position:relative;top:1.06em;white-space:normal}
+.surah-heading{color:#a27a33}.surah-bismillah{color:var(--ink)}
 </style></head><body>
 <header><a href="./">❮ Namaz Svijet</a><strong>☪ Kur’an</strong></header>
 <main>
@@ -172,6 +174,12 @@ async function load(page){
       span.title=word.text || '';
       span.dataset.verseKey=word.verse_key||'';
       span.dataset.wordPosition=String(word.position||'');
+    }else if(word.type==='surah_header'){
+      span.textContent=word.text||'';
+      span.className='surah-heading';
+    }else if(word.type==='bismillah'){
+      span.textContent=word.text||'';
+      span.className='surah-bismillah';
     }else{
       throw Error('Nepoznata oznaka u tekstu.');
     }
