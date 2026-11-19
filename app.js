@@ -53,7 +53,7 @@ function drawQuranGuides(){
     for(const rect of range.getClientRects()){
       if(rect.width<1 || rect.height<1)continue;
       const center=(rect.top+rect.bottom)/2;
-      let row=rows.find(row=>Math.abs(row.center-center)<14);
+      let row=rows.slice(-5).find(row=>Math.abs(row.center-center)<14);
       if(row){row.center=(row.center+center)/2;row.bottom=Math.max(row.bottom,rect.bottom);}
       else rows.push({center,bottom:rect.bottom});
     }
