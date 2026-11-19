@@ -752,3 +752,60 @@ body:has(#quranView:not([hidden])) .bottom-nav #quranSettingsTab {display:none!i
   body:has(#quranView:not([hidden])) #quranChapter {padding-inline:24px;}
   .mushaf-header-row {gap:3px;padding-inline:5px;}
 }
+
+/* v3.23: the Quran toolbar stays accessible throughout long surahs. */
+body:has(#quranView:not([hidden])) .mushaf-header {
+  position:sticky;
+  top:0;
+  z-index:30;
+  overflow:visible;
+}
+body:has(#quranView:not([hidden])) .mushaf-prayer-strip {
+  min-height:30px;
+  padding:2px 12px;
+  font-size:10px;
+}
+body:has(#quranView:not([hidden])) .mushaf-prayer-strip .mushaf-crescent {
+  font-size:20px;
+}
+body:has(#quranView:not([hidden])) .mushaf-header-row {
+  min-height:54px;
+  padding-block:3px;
+}
+body:has(#quranView:not([hidden])) .mushaf-header-row .mushaf-juz,
+body:has(#quranView:not([hidden])) .mushaf-header-row .mushaf-page,
+body:has(#quranView:not([hidden])) .mushaf-header-row .mushaf-surah {
+  min-height:42px;
+}
+body:has(#quranView:not([hidden])) .mushaf-header-row .mushaf-surah select {
+  min-height:40px;
+}
+.mushaf-page-status {
+  text-align:center;
+  background:#00412f;
+  border-bottom:1px solid #dcb469;
+  color:#f6e4b5;
+  font:600 12px/1.6 system-ui,sans-serif;
+  letter-spacing:.2px;
+  padding:2px 4px;
+}
+.mushaf-page-status span{font-size:14px;color:#ffe49b;}
+/* Amiri Quran diacritics extend around the glyph box. Match the marker's
+   center visually without altering its text or number. */
+#quranChapter .ayah-number,
+body:has(#quranView:not([hidden])) #quranChapter .ayah-number {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  min-width:1.75em;
+  width:1.75em;
+  height:1.75em;
+  padding:0 0 .16em;
+  line-height:1!important;
+  vertical-align:middle;
+  text-align:center;
+  font-family:'Amiri Quran',serif;
+  font-size:.57em;
+  font-weight:400;
+}
