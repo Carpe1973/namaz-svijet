@@ -17,6 +17,9 @@ button{cursor:pointer}button:disabled{opacity:.4}input[type=number]{width:78px;t
 #lines{direction:rtl;display:flex;flex-direction:column;gap:0}
 .qline{direction:rtl;display:flex;align-items:center;justify-content:space-between;min-height:3.15em;gap:.04em;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(17px,4.3vw,28px);font-weight:400;line-height:1.55}
 .qline:last-child{border-bottom:0}.qword{display:inline-block;flex:0 1 auto;text-align:center;min-width:0;font-family:'Amiri Quran','Geeza Pro',serif;white-space:nowrap}
+.ayah-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:1.85em;height:1.85em;padding:.07em;border:2px double #bb9344;border-radius:50%;color:var(--ink);background:color-mix(in srgb,var(--paper) 85%,#e8c77a);font:400 .65em/1 'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle}
+.hizb-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#b88c31;font:400 1.15em/1 'Amiri Quran','Geeza Pro',serif}
+
 #fallback{display:none;width:100%;height:auto;max-height:calc(100dvh - 245px);object-fit:contain}
 #message{min-height:30px;text-align:center;font-size:13px;margin:9px auto;color:#355a49}
 .note{max-width:650px;margin:14px auto;font-size:12px;line-height:1.5;color:#57675c}
@@ -65,9 +68,24 @@ async function load(page){
    const row=document.createElement('div');row.className='qline';
    for(const word of line.words){
     const span=document.createElement('span');span.className='qword';
-    // Readable Uthmani text; never display private-use QCF glyph codes.
-    span.textContent=word.text || '';
-    span.title=word.text || '';
+    // QCF markers contain placeholder strings such as V38 and Q.
+    // Display actual verse numbers and quarter-hizb ornaments instead.
+    if(word.type==='end'){
+      const number=Number(String(word.verse_key||'').split(':')[1]);
+      if(!Number.isInteger(number)||number<1||number>286)throw Error('Neispravan broj ajeta.');
+      span.className='ayah-marker';
+      span.textContent=String(number).replace(/[0-9]/g,d=>'٠١٢٣٤٥٦٧٨٩'[Number(d)]);
+      span.setAttribute('aria-label','Ajet '+number);
+    }else if(word.type==='quarter'){
+      span.className='hizb-marker';
+      span.textContent='۞';
+      span.setAttribute('aria-label','Oznaka četvrtine hizba');
+    }else if(word.type==='word'){
+      span.textContent=word.text || '';
+      span.title=word.text || '';
+    }else{
+      throw Error('Nepoznata oznaka u tekstu.');
+    }
     row.append(span);
    }
    group.append(row);
