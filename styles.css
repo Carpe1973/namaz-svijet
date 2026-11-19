@@ -530,3 +530,30 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
     padding-inline:18px;
   }
 }
+
+/* v3.20: extra safe space for RTL calligraphy, horizontal guides below the letters. */
+body:has(#quranView:not([hidden])) #quranChapter {
+  padding-left:clamp(22px,5vw,34px);
+  padding-right:clamp(34px,8vw,48px);
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  box-sizing:border-box;
+  width:100%;
+  direction:rtl;
+  text-align:right;
+  padding:0 4px 12px 2px;
+  line-height:2.65;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(2.65em - 1px),
+    var(--rule) calc(2.65em - 1px) 2.65em
+  );
+  background-size:100% 2.65em;
+  background-position:0 2.10em;
+}
+@media(max-width:390px) {
+  body:has(#quranView:not([hidden])) #quranChapter {
+    padding-left:22px;
+    padding-right:34px;
+  }
+}
