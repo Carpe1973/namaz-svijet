@@ -467,3 +467,27 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
   background-size:auto;
 }
 body:has(#quranView:not([hidden])) #quranChapter .ayah-number {font-size:.57em;}
+
+/* v3.17: use the full reading width, with right-to-left Arabic and tighter margins. */
+body:has(#quranView:not([hidden])) #quranChapter {
+  padding-inline:12px;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  width:100%;
+  direction:rtl;
+  text-align:justify;
+  text-align-last:right;
+  word-spacing:0;
+  letter-spacing:normal;
+  font-size:calc(clamp(25px,6.8vw,33px) * var(--reading-scale,1));
+  line-height:2.4;
+  overflow-wrap:normal;
+  padding-inline:0;
+  background:repeating-linear-gradient(to bottom,transparent 0 calc(2.4em - 1px),var(--rule) calc(2.4em - 1px) 2.4em);
+}
+body:has(#quranView:not([hidden])) #quranChapter .ayah-number {
+  min-width:1.55em;height:1.55em;margin-inline:.03em;padding-inline:.12em;
+}
+@media(max-width:390px){
+  body:has(#quranView:not([hidden])) #quranChapter {padding-inline:9px;}
+}
