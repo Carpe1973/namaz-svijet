@@ -491,3 +491,29 @@ body:has(#quranView:not([hidden])) #quranChapter .ayah-number {
 @media(max-width:390px){
   body:has(#quranView:not([hidden])) #quranChapter {padding-inline:9px;}
 }
+
+/* v3.18: keep Arabic joining and natural word gaps; place rules BELOW the glyphs.
+   Do not use justify: it stretches whitespace and can damage Mushaf readability. */
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  direction:rtl;
+  text-align:right;
+  text-align-last:right;
+  text-justify:auto;
+  word-spacing:normal;
+  letter-spacing:normal;
+  line-height:2.65;
+  padding-inline:2px;
+  background-image:repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(2.65em - 1px),
+    var(--rule) calc(2.65em - 1px) 2.65em
+  );
+  background-position:0 .82em;
+  background-size:100% 2.65em;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li,
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses .arabic-verse {
+  word-spacing:normal;
+  letter-spacing:normal;
+  text-align:right;
+}
