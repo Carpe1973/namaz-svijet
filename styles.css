@@ -882,3 +882,24 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses .arabic
   word-spacing:inherit;
   letter-spacing:normal;
 }
+
+
+/* v3.27: distinct row rules and ornate page-end cartouche. */
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  background-image:repeating-linear-gradient(to bottom,transparent 0 calc(2.65em - 1px),rgba(96,112,96,.48) calc(2.65em - 1px) 2.65em)!important;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider {
+  isolation:isolate;z-index:2;gap:0;min-height:76px;margin:23px 0 22px;padding:8px 0;background:var(--paper);
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::before,
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::after {
+  content:"❦";height:33px;flex:1 1 0;display:flex;align-items:center;color:#ae8537;font:400 27px/1 Georgia,serif;
+  background:linear-gradient(to bottom,transparent calc(50% - .5px),#ab904f calc(50% - .5px),#ab904f calc(50% + .5px),transparent calc(50% + .5px));
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::before {justify-content:flex-end;padding-right:6px;}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::after {justify-content:flex-start;padding-left:6px;transform:scaleX(-1);}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span {
+  flex:none;box-sizing:border-box;width:90px;min-width:90px;height:51px;border:2px solid #bb9549;border-radius:46% / 34%;
+  outline:1px solid #ddbc6d;outline-offset:3px;box-shadow:inset 0 0 0 2px #0b593f,inset 0 0 0 3px #dfbd75;
+  background:#064731;color:#fff1c8;font:400 30px/1 Georgia,serif;
+}
