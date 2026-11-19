@@ -17,7 +17,7 @@ button{cursor:pointer}button:disabled{opacity:.4}input[type=number]{width:78px;t
 #lines{direction:rtl;display:flex;flex-direction:column;gap:0}
 .qline{direction:rtl;display:block;text-align:center;width:100%;min-height:3.15em;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(17px,4.3vw,28px);font-weight:400;line-height:1.55}
 .qline:last-child{border-bottom:0}.qword{display:inline-block;text-align:center;font-family:'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle}
-.ayah-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:1.9em;height:1.9em;min-width:1.9em;border:2px double #ad873d;border-radius:50%;color:#15472f;background:#fff5d5;box-shadow:inset 0 0 0 2px #e3c785;font:400 .65em/1 'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle;position:relative;top:-.55em}
+.ayah-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:1.9em;height:1.9em;min-width:1.9em;border:2px double #ad873d;border-radius:50%;color:#15472f;background:#fff5d5;box-shadow:inset 0 0 0 2px #e3c785;font:400 .65em/1 'Amiri Quran','Geeza Pro',serif;white-space:nowrap;vertical-align:middle;position:relative;top:-.15em}
 .hizb-marker{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;color:#b88c31;font:400 1.15em/1 'Amiri Quran','Geeza Pro',serif}
 
 #fallback{display:none;width:100%;height:auto;max-height:calc(100dvh - 245px);object-fit:contain}
@@ -27,7 +27,7 @@ body:has(.reader[data-theme=night]){background:#182019;color:#e9ead9}
 body:has(.reader[data-theme=night]) #message,body:has(.reader[data-theme=night]) .note{color:#c3d0bc}
 label{font-size:13px;font-weight:600}
 @media(max-width:420px){.reader{padding:13px 7px}.qline{font-size:clamp(15px,4.5vw,21px)}.controls{gap:5px}}
-</style></head><body>
+body{overflow-x:hidden}main,.reader,#lines{min-width:0;max-width:100%}.qline{max-width:100%;overflow:visible}.ayah-marker{margin-inline:.04em}</style></head><body>
 <header><a href="./">❮ Namaz Svijet</a><strong>Mushaf · Ajeti u krugu</strong></header>
 <main>
 <div class="controls"><button id="prev">❮</button><label for="page">Stranica</label><input id="page" type="number" min="1" max="604" value="4"><span>/ 604</span><button id="next">❯</button>
@@ -100,7 +100,7 @@ async function load(page){
       const required=row.scrollWidth;
       if(available>0 && required>available){
         const base=parseFloat(getComputedStyle(row).fontSize);
-        row.style.fontSize=(base*Math.max(.48,(available-4)/required))+'px';
+        row.style.fontSize=(base*Math.min(1,(available-12)/required))+'px';
       }
     });
   };
@@ -112,6 +112,6 @@ async function load(page){
 el('prev').onclick=()=>load(current-1);el('next').onclick=()=>load(current+1);
 el('page').onchange=()=>load(Number(el('page').value));
 el('theme').onchange=()=>{el('reader').dataset.theme=el('theme').value;};
-window.addEventListener('resize',()=>load(current),{passive:true});
+window.addEventListener('resize',()=>{const rows=el('lines').querySelectorAll('.qline');for(const row of rows){row.style.fontSize='';const width=row.clientWidth,full=row.scrollWidth;if(width>0&&full>width){row.style.fontSize=(parseFloat(getComputedStyle(row).fontSize)*(width-12)/full)+'px';}}},{passive:true});
 load(current);
 </script></body></html>
