@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="bs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#063f2d"><title>Mushaf Tajweed · Proba</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eee3c9;color:#143c2f;font:16px system-ui,-apple-system,sans-serif}
+header{position:sticky;top:0;z-index:9;background:#03432e;color:#fff0c8;border-bottom:3px double #c5a15d;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header a{color:inherit;text-decoration:none;font-weight:650}header strong{font-size:17px}
+main{max-width:760px;margin:auto;padding:12px 8px 50px}
+.controls{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+button,select,input{font:inherit;padding:9px;border:1px solid #b18d48;border-radius:10px;background:#f8eac7;color:#153c2f}
+button{cursor:pointer}button:disabled{opacity:.4}input[type=number]{width:78px;text-align:center}
+.reader{--ink:#12291e;--paper:#eef4e4;--rule:#afbc9c;position:relative;margin:auto;max-width:650px;padding:20px 12px;background:var(--paper);border:6px double #b79040;box-shadow:inset 0 0 0 4px #06543c;color:var(--ink);min-height:360px}
+.reader[data-theme=night]{--ink:#fff8e4;--paper:#112018;--rule:#415646}
+.reader[data-theme=cream]{--paper:#fff1d2;--rule:#dac49a}
+.reader h1{text-align:center;font:600 20px Georgia,serif;margin:0 0 8px;color:var(--ink)}
+#lines{direction:rtl;display:flex;flex-direction:column;gap:0}
+.qline{direction:rtl;display:flex;align-items:center;justify-content:space-between;min-height:3.55em;gap:0;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(19px,4.6vw,29px);font-weight:400;line-height:1.55}
+.qline:last-child{border-bottom:0}.qword{display:inline-block;flex:0 1 auto;text-align:center;min-width:0;font-family:var(--qcf-font),'Amiri Quran',serif;font-variation-settings:normal;white-space:nowrap}
+#fallback{display:none;width:100%;height:auto;max-height:calc(100dvh - 245px);object-fit:contain}
+#message{min-height:30px;text-align:center;font-size:13px;margin:9px auto;color:#355a49}
+.note{max-width:650px;margin:14px auto;font-size:12px;line-height:1.5;color:#57675c}
+body:has(.reader[data-theme=night]){background:#182019;color:#e9ead9}
+body:has(.reader[data-theme=night]) #message,body:has(.reader[data-theme=night]) .note{color:#c3d0bc}
+label{font-size:13px;font-weight:600}
+@media(max-width:420px){.reader{padding:13px 7px}.qline{font-size:clamp(15px,4.5vw,21px)}.controls{gap:5px}}
+</style></head><body>
+<header><a href="./">❮ Namaz Svijet</a><strong>Mushaf Tajweed · Test</strong></header>
+<main>
+<div class="controls"><button id="prev">❮</button><label for="page">Stranica</label><input id="page" type="number" min="1" max="604" value="4"><span>/ 604</span><button id="next">❯</button>
+<select id="theme" aria-label="Pozadina"><option value="green">Zelena</option><option value="cream">Krem</option><option value="night">Noćna</option></select></div>
+<div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
+<p id="message" role="status"></p>
+<p class="note">Eksperimentalni QCF V4 Tajweed prikaz sa stvarnih 15 redova. Ako font ili podaci ne mogu da se učitaju, prikazuje se izvorna slika stranice. Font dolazi sa Quran Foundation servera; korištenje i distribucija zavise od njihovih uslova. Podaci o rasporedu: quran-library (MIT). Ovaj pregled nije zamjena za provjeren Mushaf.</p>
+</main>
+<script>
+'use strict';
+const el=id=>document.getElementById(id);
+const root='https://raw.githubusercontent.com/ahmadmounir/quran-library/main/data/mushaf/pages/page-';
+const fontRoot='https://verses.quran.foundation/fonts/quran/hafs/v4/colrv1/woff2/p';
+let current=4,run=0,face=null;
+try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
+function fallback(page,reason){
+ el('lines').replaceChildren();el('lines').hidden=true;
+ const image=el('fallback');image.style.display='block';
+ image.src='https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/'+page+'.png';
+ image.alt='Stranica '+page+' (originalna slika)';
+ el('message').textContent=reason+' Prikazana je slika stranice.';
+}
+async function load(page){
+ if(!Number.isInteger(page)||page<1||page>604)return;
+ const id=++run;current=page;el('page').value=page;
+ el('heading').textContent='Stranica '+page+' / 604';el('message').textContent='Učitavanje fonta i rasporeda…';
+ el('prev').disabled=page===1;el('next').disabled=page===604;
+ el('fallback').style.display='none';el('fallback').removeAttribute('src');el('lines').hidden=false;el('lines').replaceChildren();
+ try{localStorage.setItem('ns_qcf_test_page',String(page))}catch{}
+ try{
+  const url=root+String(page).padStart(3,'0')+'.json';
+  const response=await fetch(url);
+  if(!response.ok)throw Error('Podaci za stranicu nisu dostupni.');
+  const data=await response.json();
+  if(!Array.isArray(data.lines)||!data.lines.length||!data.lines.every(line=>Array.isArray(line.words)))throw Error('Neispravni podaci o redovima.');
+  // Use the QCF V4 COLRv1 font only for matching code_v2 glyphs.
+  const name='QCF-v4-page-'+page;
+  let loaded=document.fonts.check('20px "'+name+'"');
+  if(!loaded){
+   const loadedFace=new FontFace(name,'url('+fontRoot+page+'.woff2)',{style:'normal',weight:'400'});
+   await loadedFace.load();
+   if(id!==run)return;
+   document.fonts.add(loadedFace);
+   face=loadedFace;
+  }
+  if(id!==run)return;
+  el('lines').style.setProperty('--qcf-font','"'+name+'"');
+  const group=document.createDocumentFragment();
+  for(const line of data.lines){
+   const row=document.createElement('div');row.className='qline';
+   for(const word of line.words){
+    const span=document.createElement('span');span.className='qword';
+    // Each glyph is encoded in the code_v2 Quran Complex Font.
+    span.textContent=word.g || '';
+    span.title=word.text || '';
+    row.append(span);
+   }
+   group.append(row);
+  }
+  el('lines').append(group);
+  el('message').textContent='QCF Tajweed: '+data.lines.length+' izvornih redova · stranica '+page;
+ }catch(error){if(id!==run)return;fallback(page,error?.message||'Font nije dostupan.');}
+}
+el('prev').onclick=()=>load(current-1);el('next').onclick=()=>load(current+1);
+el('page').onchange=()=>load(Number(el('page').value));
+el('theme').onchange=()=>{el('reader').dataset.theme=el('theme').value;};
+load(current);
+</script></body></html>
