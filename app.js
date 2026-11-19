@@ -284,13 +284,21 @@ async function fetchTajweed(chapter){
   return verses.map(verse => verse.text_uthmani_tajweed);
 }
 
-function renderQuranVerse(verse, highlighted, translation, language, number){
+function renderQuranVerse(verse, highlighted, translation, language, number, chapterId){
   const item = document.createElement('li');
   const arabic = document.createElement('p');
   arabic.className = 'arabic-verse';
   arabic.lang = 'ar';
   arabic.dir = 'rtl';
-  arabic.append(highlighted || verse.text);
+  // The paired-waqf signs in Al-Baqarah 2:2 are essential. They are separate
+  // Quranic marks, not decorative punctuation, and some tajweed APIs omit them.
+  const verifiedTwoTwo = 'ذَٰلِكَ ٱلْكِتَٰبُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ';
+  const sourceText = chapterId === 2 && number === 2 ? verifiedTwoTwo : verse?.text;
+  if(typeof sourceText !== 'string' || !sourceText.trim()) throw Error('Missing Quran text');
+  // Never substitute markup if its entire text differs even by one Quranic mark.
+  // Fail closed to plain, authoritative verse text.
+  const sameText = highlighted && highlighted.textContent === sourceText;
+  arabic.append(sameText ? highlighted : sourceText);
   const marker = document.createElement('bdi');
   marker.className = 'ayah-number';
   marker.textContent = String(number).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
@@ -366,10 +374,10 @@ async function openQuran(){
     const data = plain.value;
     const translation = translated.value;
     const highlights = !showBasmala || basmala.value ? coloured.value : null;
-    if(!highlights && (!data || !validVerses(data, chapter, 'text'))) throw Error('Invalid chapter');
+    if(!data || !validVerses(data, chapter, 'text')) throw Error('Invalid authoritative Quran text');
 
     const verses = Array.from({length:chapter.total_verses}, (_, index) =>
-      renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language, index + 1));
+      renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language, index + 1, chapter.id));
     $('surahTitle').textContent = chapter.name;
     mushafPageMetadata = pageInfo.status === 'fulfilled' && Array.isArray(pageInfo.value) ? pageInfo.value : [];
     const contentWithPages = [];
