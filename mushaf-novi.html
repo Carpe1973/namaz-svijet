@@ -134,8 +134,22 @@ async function getTajweed(verseKeys){
 }
 function renderTajweedWord(node,word,rules){
  const position=Number(word.position)-1;
- const segments=rules?.get(word.verse_key)?.[position];
- if(!segments || !word.text){node.textContent=word.text||'';return false;}
+ const choices=rules?.get(word.verse_key);
+ if(!choices || !word.text){node.textContent=word.text||'';return false;}
+ const base=s=>s.normalize('NFKD').replace(/\p{M}/gu,'')
+   .replace(/[\u0640\u06E5\u06E6]/g,'').replace(/[ٱأإآ]/g,'ا').replace(/ى/g,'ي');
+ const expected=base(word.text);
+ let segments=choices[position];
+ if(!segments || base(segments.map(s=>s.text).join(''))!==expected){
+   // Some Uthmani encodings tokenize special glyphs differently. Only
+   // recover a uniquely matching neighboring token; never guess a rule.
+   const matches=[];
+   for(let i=Math.max(0,position-3);i<Math.min(choices.length,position+4);i++){
+     if(base(choices[i].map(s=>s.text).join(''))===expected)matches.push(i);
+   }
+   if(matches.length!==1){node.textContent=word.text;return false;}
+   segments=choices[matches[0]];
+ }
  // Match base Arabic characters, keeping every original Uthmani character intact.
  const normalize=s=>s.normalize('NFKD').replace(/\p{M}/gu,'')
    .replace(/[\u0640\u06E5\u06E6]/g,'').replace(/[ٱأإآ]/g,'ا').replace(/ى/g,'ي');
@@ -239,15 +253,16 @@ async function load(page){
     getTajweed(keys).then(rules=>{
       if(id!==run || !el('tajweed').checked)return;
       let applied=0;
+      let total=0;
       const words=data.lines.flatMap(line=>line.words.filter(w=>w.type==='word'));
       const spans=[...el('lines').querySelectorAll('.qword')];
            for(const line of data.lines)for(const word of line.words)if(word.type==='word'){
         // Find source word node by its stable verse key and position.
         const node=spans.find(x=>x.dataset.verseKey===word.verse_key&&x.dataset.wordPosition===String(word.position));
-        if(node && renderTajweedWord(node,word,rules))applied++;
+        if(node){total++;if(renderTajweedWord(node,word,rules))applied++;}
       }
-      if(applied>0)el('message').textContent='Tedžvid: '+applied+' obojenih riječi · stranica '+page;
-      else el('message').textContent='Tekst je čitljiv; potvrđene tedžvidske boje nisu dostupne za ovu stranicu.';
+      if(applied>0)el('message').textContent='Tedžvid: '+applied+' od '+total+' riječi s prepoznatim obojenim pravilima · stranica '+page;
+      else el('message').textContent='Tekst je čitljiv, ali izvor tedžvida nije usklađen s riječima ove stranice.';
     }).catch(()=>{});
   }
  }catch(error){if(id!==run)return;fallback(page,error?.message||'Font nije dostupan.');}
