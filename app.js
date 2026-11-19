@@ -137,7 +137,7 @@ function renderCompass(){
 }
 function setView(name){
   if(name==='quran' && new URLSearchParams(location.search).get('legacy')!=='1'){
-    location.assign('./mushaf-novi.html');
+    location.assign('./mushaf-novi.html?v=2');
     return;
   }
   const changed = $(name+'View').hidden;
