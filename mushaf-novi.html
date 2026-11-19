@@ -56,7 +56,7 @@ body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 <div class="legend"><span class="tajweed-short">Prirodni medd</span><span class="tajweed-madd">Produženi medd</span><span class="tajweed-nasal">Gunna</span><span class="tajweed-echo">Kalkala</span><span class="tajweed-silent">Neizgovoreni znak</span></div>
 <div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
 <p id="message" role="status"></p>
-<p class="note"><a href="./?tab=quran&amp;legacy=1">Otvori prethodni čitač Kur’ana</a>. Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boja se prikazuje samo kada se arapska riječ potpuno podudara s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
+<p class="note"><a href="./?tab=quran&amp;legacy=1">Otvori prethodni čitač Kur’ana</a>. Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boje se prenose samo kada se osnovna slova riječi podudaraju s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
 <nav class="nav"><a href="./?tab=times"><span>☪</span>Namazi</a><a href="./?tab=qibla"><span>🧭</span>Kibla</a><a href="./?tab=schedule"><span>▦</span>Vaktija</a><a class="current" href="./mushaf-novi.html"><span>📖</span>Kur’an</a></nav>
 </main>
 <script>
@@ -115,16 +115,36 @@ async function getTajweed(verseKeys){
 function renderTajweedWord(node,word,rules){
  const position=Number(word.position)-1;
  const segments=rules?.get(word.verse_key)?.[position];
- if(!segments || segments.map(s=>s.text).join('')!==word.text){
-   node.textContent=word.text||'';return false;
+ if(!segments || !word.text){node.textContent=word.text||'';return false;}
+ // Match base Arabic characters, keeping every original Uthmani character intact.
+ const normalize=s=>s.normalize('NFKD').replace(/\p{M}/gu,'')
+   .replace(/[\u0640\u06E5\u06E6]/g,'').replace(/[ٱأإآ]/g,'ا').replace(/ى/g,'ي');
+ const source=segments.map(s=>s.text).join('');
+ if(normalize(source)!==normalize(word.text)){
+   node.textContent=word.text;return false;
  }
- let colored=false;
- for(const part of segments){
-   if(!part.rule)node.append(document.createTextNode(part.text));
-   else{const span=document.createElement('span');span.className='tajweed-'+part.rule;
-     span.textContent=part.text;node.append(span);colored=true;}
+ const sourceRules=[];
+ for(const segment of segments){
+   for(const ch of [...normalize(segment.text)])sourceRules.push(segment.rule);
  }
- return colored;
+ const units=[...new Intl.Segmenter('ar',{granularity:'grapheme'}).segment(word.text)].map(s=>s.segment);
+ let offset=0,colored=false,lastRule=null,lastText='';
+ const emit=()=>{
+   if(!lastText)return;
+   if(!lastRule)node.append(document.createTextNode(lastText));
+   else{const span=document.createElement('span');span.className='tajweed-'+lastRule;
+     span.textContent=lastText;node.append(span);colored=true;}
+   lastText='';
+ };
+ for(const unit of units){
+   const length=[...normalize(unit)].length;
+   const relevant=sourceRules.slice(offset,offset+length);
+   const rule=length && relevant.length===length && relevant.every(x=>x===relevant[0]) ? relevant[0] : lastRule;
+   offset+=length;
+   if(lastText && lastRule!==rule)emit();
+   lastRule=rule;lastText+=unit;
+ }
+ emit();return colored;
 }
 
 try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
