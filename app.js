@@ -28,6 +28,56 @@ let quranChapters = [], quranRequest = 0, quranLoading = false;
 let translationCatalog, basmalaRequest;
 let mushafPageMetadata = [];
 let mushafScrollQueued = false;
+
+/* Draw guides at measured Arabic text lines, not at fixed CSS intervals.
+   This stays aligned when the font, screen width or reading zoom changes. */
+let quranGuideQueued=false;
+function scheduleQuranGuides(){
+  if(quranGuideQueued)return;
+  quranGuideQueued=true;
+  requestAnimationFrame(()=>{quranGuideQueued=false;drawQuranGuides()});
+}
+function drawQuranGuides(){
+  const chapter=$('quranChapter'), verses=$('surahVerses');
+  let layer=chapter.querySelector('.measured-quran-guides');
+  if(!layer){layer=document.createElement('div');layer.className='measured-quran-guides';layer.setAttribute('aria-hidden','true');chapter.append(layer);}
+  layer.replaceChildren();
+  if(chapter.hidden || !chapter.classList.contains('continuous') || $('quranView').hidden)return;
+  const container=chapter.getBoundingClientRect(), area=verses.getBoundingClientRect();
+  const rows=[];
+  const range=document.createRange();
+  // Group fragments from the same visual line; individual tajweed spans can
+  // return several rects, all with slightly different typographic bounds.
+  verses.querySelectorAll('li[data-verse] .arabic-verse').forEach(verse=>{
+    range.selectNodeContents(verse);
+    for(const rect of range.getClientRects()){
+      if(rect.width<1 || rect.height<1)continue;
+      const center=(rect.top+rect.bottom)/2;
+      let row=rows.find(row=>Math.abs(row.center-center)<14);
+      if(row){row.center=(row.center+center)/2;row.bottom=Math.max(row.bottom,rect.bottom);}
+      else rows.push({center,bottom:rect.bottom});
+    }
+  });
+  range.detach?.();
+  const fragment=document.createDocumentFragment();
+  const seen=new Set();
+  rows.sort((a,b)=>a.center-b.center);
+  for(const row of rows){
+    const y=Math.round(row.bottom-container.top+11);
+    if(y<0||y>chapter.scrollHeight||seen.has(y))continue;
+    seen.add(y);
+    const rule=document.createElement('i');
+    rule.className='measured-quran-guide';
+    rule.style.top=y+'px';
+    rule.style.left=(area.left-container.left)+'px';
+    rule.style.width=area.width+'px';
+    fragment.append(rule);
+  }
+  layer.append(fragment);
+}
+window.addEventListener('resize',scheduleQuranGuides,{passive:true});
+if(document.fonts?.ready)document.fonts.ready.then(scheduleQuranGuides);
+
 async function fetchMushafPages(chapter){
   const response = await fetch('https://api.alquran.cloud/v1/surah/' + chapter.id);
   if(!response.ok) throw Error('Mushaf metadata unavailable');
@@ -411,6 +461,7 @@ async function openQuran(){
     $('quranLicense').hidden = !data?.notice;
     $('quranChapter').hidden = false;
     requestAnimationFrame(updateMushafPosition);
+    scheduleQuranGuides();
     const messages = [];
     if(colourEnabled && !highlights) messages.push(t('tajweedError'));
     if(!translation) messages.push(t('translationError'));
@@ -750,6 +801,7 @@ showMeaning.checked = saved('ns_show_meaning',false);
 function applyReaderLayout(){
   $('quranView').dataset.paper = paperTheme.value;
   $('quranChapter').classList.toggle('continuous', !showMeaning.checked);
+  scheduleQuranGuides();
 }
 applyReaderLayout();
 paperTheme.addEventListener('change', () => {applyReaderLayout(); save('ns_paper_theme',paperTheme.value)});
@@ -761,6 +813,7 @@ function applyReadingSize(){
   $('quranView').style.setProperty('--reading-scale', String(percent / 100));
   $('readingPercent').value = percent + '%';
   readingSize.setAttribute('aria-valuetext', percent + '%');
+  scheduleQuranGuides();
 }
 applyReadingSize();
 readingSize.addEventListener('input', applyReadingSize);
