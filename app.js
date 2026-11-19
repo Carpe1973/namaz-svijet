@@ -659,7 +659,9 @@ for(const button of periodButtons){
 $('surahSelect').addEventListener('change', openQuran);
 $('quranRetry').addEventListener('click', openQuran);
 const paperTheme = $('paperTheme'), showMeaning = $('showMeaning');
-paperTheme.value = saved('ns_paper_theme','day') === 'night' ? 'night' : 'day';
+const themeChoices = new Set(['cream', 'soft-green', 'olive', 'night', 'navy', 'charcoal']);
+const savedPaperTheme = saved('ns_paper_theme', 'cream');
+paperTheme.value = themeChoices.has(savedPaperTheme) ? savedPaperTheme : (savedPaperTheme === 'day' ? 'cream' : 'cream');
 showMeaning.checked = saved('ns_show_meaning',false);
 function applyReaderLayout(){
   $('quranView').dataset.paper = paperTheme.value;
