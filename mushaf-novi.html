@@ -47,6 +47,26 @@ body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 @media(max-width:390px){.nav a{font-size:12px}.legend{font-size:10px}}
 .surah-heading,.surah-bismillah{font-family:'Amiri Quran','Geeza Pro',serif;display:inline-block;position:relative;top:1.06em;white-space:normal}
 .surah-heading{color:#a27a33}.surah-bismillah{color:var(--ink)}
+
+/* Phone-first reading: favor legible Arabic over squeezing 15 fixed lines
+   into a narrow viewport; never let text escape the page frame. */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+main{width:100%;max-width:760px;padding:6px 3px 30px}
+.reader{width:100%;max-width:100%;padding:10px 8px 18px;border-width:4px}
+#lines{display:block;min-width:0;width:100%;overflow:hidden}
+.qline{display:block;white-space:normal;overflow-wrap:normal;word-break:normal;
+  text-align:center;min-height:0;line-height:2.2;
+  font-size:calc(clamp(24px,6.8vw,34px)*var(--mushaf-font-scale,1));
+  padding:4px 0 15px;border-bottom:1px solid var(--rule)}
+.qword,.surah-heading,.surah-bismillah{position:static;display:inline;white-space:normal;vertical-align:baseline;top:auto}
+.ayah-marker{position:relative;display:inline-flex;top:.12em;vertical-align:middle;line-height:1;white-space:nowrap}
+.ayah-digits{transform:translateY(-.27em)}
+.hizb-marker{position:relative;top:0}
+.controls{margin:7px 0 4px;gap:5px}.controls button,.controls select,.controls input{padding:7px 5px}
+.reader-tools{gap:9px;padding:5px 3px}
+.legend{margin:2px auto 5px}
+.note{font-size:12px;padding:0 8px}
+@media(max-width:420px){.qline{font-size:calc(clamp(24px,6.7vw,30px)*var(--mushaf-font-scale,1))}.reader{padding-inline:6px}}
 </style></head><body>
 <header><a href="./">❮ Namaz Svijet</a><strong>☪ Kur’an</strong></header>
 <main>
@@ -56,7 +76,7 @@ body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 <div class="legend"><span class="tajweed-short">Prirodni medd</span><span class="tajweed-madd">Produženi medd</span><span class="tajweed-nasal">Gunna</span><span class="tajweed-echo">Kalkala</span><span class="tajweed-silent">Neizgovoreni znak</span></div>
 <div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
 <p id="message" role="status"></p>
-<p class="note"><a href="./?tab=quran&amp;legacy=1">Otvori prethodni čitač Kur’ana</a>. Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boje se prenose samo kada se osnovna slova riječi podudaraju s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
+<details class="note"><summary>Izvori teksta i prethodni čitač</summary><p><a href="./?tab=quran&amp;legacy=1">Prethodni čitač Kur’ana</a>. Raspored: quran-qcf4 (MIT), font Amiri Quran; tedžvid: Quran Foundation. Nepodudarne riječi ostaju neobojene. U probnom režimu uporedi prikaz s provjerenim Mushafom.</p></details>
 <nav class="nav"><a href="./?tab=times"><span>☪</span>Namazi</a><a href="./?tab=qibla"><span>🧭</span>Kibla</a><a href="./?tab=schedule"><span>▦</span>Vaktija</a><a class="current" href="./mushaf-novi.html"><span>📖</span>Kur’an</a></nav>
 </main>
 <script>
@@ -208,21 +228,9 @@ async function load(page){
    group.append(row);
   }
   el('lines').append(group);
-  // Each source line remains one visual line; reduce size only when it
-  // exceeds the available phone width, and center the entire line.
-  const fitRows=()=>{
-    el('lines').querySelectorAll('.qline').forEach(row=>{
-      row.style.fontSize='';
-      const available=row.clientWidth;
-      const required=row.scrollWidth;
-      if(available>0 && required>available){
-        const base=parseFloat(getComputedStyle(row).fontSize);
-        row.style.fontSize=(base*Math.min(1,(available-12)/required))+'px';
-      }
-    });
-  };
-  requestAnimationFrame(fitRows);
-  if(document.fonts?.ready)document.fonts.ready.then(()=>{if(id===run)fitRows()});
+  // Keep original line groups, but allow them to wrap on narrow phones.
+  // Never shrink every glyph just to force 15 physical lines onto the screen.
+  el('lines').style.setProperty('--mushaf-font-scale',String(Number(el('size').value)/100));
 
   el('message').textContent='Stranica '+page+' · '+data.lines.length+' redova';
   if(el('tajweed').checked){
@@ -251,10 +259,11 @@ el('tajweed').onchange=()=>{localStorage.setItem('ns_mushaf_tajweed',el('tajweed
 el('size').oninput=()=>{
  const percent=Number(el('size').value);
  el('percent').textContent=percent+'%';
- el('lines').style.zoom=String(percent/100);
+ el('lines').style.setProperty('--mushaf-font-scale',String(percent/100));
+ try{localStorage.setItem('ns_mushaf_size',String(percent))}catch{}
 };
 try{const th=localStorage.getItem('ns_mushaf_theme');if(['green','cream','night'].includes(th)){el('theme').value=th;el('reader').dataset.theme=th;}
- if(localStorage.getItem('ns_mushaf_tajweed')==='0')el('tajweed').checked=false;}catch{}
-window.addEventListener('resize',()=>{const rows=el('lines').querySelectorAll('.qline');for(const row of rows){row.style.fontSize='';const width=row.clientWidth,full=row.scrollWidth;if(width>0&&full>width){row.style.fontSize=(parseFloat(getComputedStyle(row).fontSize)*(width-12)/full)+'px';}}},{passive:true});
+ if(localStorage.getItem('ns_mushaf_tajweed')==='0')el('tajweed').checked=false;
+ const p=Number(localStorage.getItem('ns_mushaf_size'));if(p>=70&&p<=160){el('size').value=String(p);el('percent').textContent=p+'%';}}catch{}
 load(current);
 </script></body></html>
