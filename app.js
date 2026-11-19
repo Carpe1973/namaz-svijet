@@ -109,7 +109,7 @@ function setView(name){
     else tab.removeAttribute('aria-current');
   }
   document.body.classList.toggle('quran-mode', name === 'quran');
-  $('quranSettingsTab').hidden = name !== 'quran';
+  $('quranSettingsTab').hidden = true;
   if(changed) window.scrollTo(0, 0);
   if(name === 'schedule') renderSchedule();
   if(name === 'quran' && $('quranChapter').hidden && !quranLoading) openQuran();
@@ -307,6 +307,8 @@ async function openQuran(){
     }
 
     const chapter = quranChapters[Number(select.value) - 1];
+    $('mushafPage').textContent = String(chapter.id);
+    $('mushafJuz').textContent = chapter.id <= 2 ? 'Juz 1' : 'Juz';
     const showBasmala = colourEnabled && chapter.id !== 1 && chapter.id !== 9;
     if(showBasmala && !basmalaRequest){
       basmalaRequest = fetchTajweed(quranChapters[0]).then(verses => tajweedVerse(verses[0])).catch(() => {
