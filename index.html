@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=3.12">
+  <link rel="stylesheet" href="./styles.css?v=3.13">
   <title>Namaz Svijet</title>
 </head>
 <body>
@@ -68,6 +68,10 @@
       <label class="quran-picker" for="surahSelect"><span data-t="surah">Sura</span>
         <select id="surahSelect" disabled></select>
       </label>
+      <label class="quran-picker" for="paperTheme"><span data-t="paperTheme">Pozadina za čitanje</span>
+        <select id="paperTheme"><option value="day" data-t="dayPaper">Dnevna</option><option value="night" data-t="nightPaper">Noćna</option></select>
+      </label>
+      <label class="tajweed-toggle"><input type="checkbox" id="showMeaning"> <span data-t="showMeaning">Prikaži prijevod</span></label>
       <div class="reading-size">
         <label for="readingSize" data-t="readingSize">Veličina slova</label>
         <output id="readingPercent" for="readingSize">100%</output>
@@ -77,6 +81,7 @@
       <details id="tajweedLegend" class="tajweed-legend">
         <summary data-t="legend">Značenje boja</summary>
         <ul>
+          <li class="tajweed-short" data-t="shortMadd">Prirodni medd</li>
           <li class="tajweed-madd" data-t="lengthen">Medd · produži</li>
           <li class="tajweed-nasal" data-t="nasal">Gunna i srodna pravila</li>
           <li class="tajweed-echo" data-t="echo">Kalkala · odjek</li>
@@ -120,7 +125,7 @@
 </dialog>
 <script src="./al-badr-2026.js" defer></script>
 <script src="./cci-2026.js" defer></script>
-<script src="./i18n.js?v=3.10" defer></script>
-<script src="./app.js?v=3.10" defer></script>
+<script src="./i18n.js?v=3.13" defer></script>
+<script src="./app.js?v=3.13" defer></script>
 </body>
 </html>

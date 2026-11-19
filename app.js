@@ -28,7 +28,7 @@ let quranChapters = [], quranRequest = 0, quranLoading = false;
 let translationCatalog, basmalaRequest;
 const tajweedColours = {
   ham_wasl: 'silent', laam_shamsiyah: 'silent', slnt: 'silent',
-  madda_normal: 'madd', madda_permissible: 'madd', madda_obligatory: 'madd', madda_necessary: 'madd',
+  madda_normal: 'short', madda_permissible: 'madd', madda_obligatory: 'madd', madda_necessary: 'madd',
   ghunnah: 'nasal', idgham_ghunnah: 'nasal', idgham_wo_ghunnah: 'nasal', idgham_shafawi: 'nasal',
   idgham_mutajanisayn: 'nasal', idgham_mutaqaribayn: 'nasal', ikhafa: 'nasal', ikhafa_shafawi: 'nasal', iqlab: 'nasal',
   qalaqah: 'echo'
@@ -245,13 +245,17 @@ async function fetchTajweed(chapter){
   return verses.map(verse => verse.text_uthmani_tajweed);
 }
 
-function renderQuranVerse(verse, highlighted, translation, language){
+function renderQuranVerse(verse, highlighted, translation, language, number){
   const item = document.createElement('li');
   const arabic = document.createElement('p');
   arabic.className = 'arabic-verse';
   arabic.lang = 'ar';
   arabic.dir = 'rtl';
   arabic.append(highlighted || verse.text);
+  const marker = document.createElement('bdi');
+  marker.className = 'ayah-number';
+  marker.textContent = String(number).replace(/\d/g, digit => '٠١٢٣٤٥٦٧٨٩'[digit]);
+  arabic.append(' ', marker, ' ');
   item.append(arabic);
   if(translation){
     const meaning = document.createElement('p');
@@ -321,7 +325,7 @@ async function openQuran(){
     if(!highlights && (!data || !validVerses(data, chapter, 'text'))) throw Error('Invalid chapter');
 
     const verses = Array.from({length:chapter.total_verses}, (_, index) =>
-      renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language));
+      renderQuranVerse(data?.verses?.[index], highlights?.[index], translation?.verses[index], language, index + 1));
     $('surahTitle').textContent = chapter.name;
     $('surahVerses').replaceChildren(...verses);
     $('surahBasmala').replaceChildren(...(highlights && basmala.value ? [basmala.value] : []));
@@ -654,6 +658,16 @@ for(const button of periodButtons){
 }
 $('surahSelect').addEventListener('change', openQuran);
 $('quranRetry').addEventListener('click', openQuran);
+const paperTheme = $('paperTheme'), showMeaning = $('showMeaning');
+paperTheme.value = saved('ns_paper_theme','day') === 'night' ? 'night' : 'day';
+showMeaning.checked = saved('ns_show_meaning',false);
+function applyReaderLayout(){
+  $('quranView').dataset.paper = paperTheme.value;
+  $('quranChapter').classList.toggle('continuous', !showMeaning.checked);
+}
+applyReaderLayout();
+paperTheme.addEventListener('change', () => {applyReaderLayout(); save('ns_paper_theme',paperTheme.value)});
+showMeaning.addEventListener('change', () => {applyReaderLayout(); save('ns_show_meaning',showMeaning.checked)});
 const readingSize = $('readingSize');
 readingSize.value = saved('ns_reading_size', 100);
 function applyReadingSize(){

@@ -184,3 +184,37 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline-color:#ffd
   /* iOS magnifies form fields with smaller text when the keyboard opens. */
   .search-form input { font-size: 16px; }
 }
+
+#quranView { --paper: #fffdf6; --ink: #191810; --rule: #c8bda6; --frame: #267c83; --gold: #a97831; --nasal: #097b42; --madd: #bb263e; --short: #ad580b; --echo: #087aa4; --silent: #68675e; }
+#quranView[data-paper="night"] { --paper: #0c1511; --ink: #faf7ed; --rule: #526459; --frame: #788e7e; --gold: #c5c8ad; --nasal: #8bd896; --madd: #ff7e83; --short: #ffb567; --echo: #7ecbf5; --silent: #aeb7ae; }
+#quranChapter {
+  position: relative; border: 3px double var(--frame); border-radius: 5px;
+  background: var(--paper); color: var(--ink); padding: 16px clamp(16px, 4vw, 30px);
+}
+#quranChapter::before, #quranChapter::after {
+  content: ''; position: absolute; inset-block: 0; width: 7px; pointer-events: none;
+  background: repeating-conic-gradient(from 45deg, var(--frame) 0 25%, var(--paper) 0 42%, var(--gold) 0 50%) center / 8px 12px;
+}
+#quranChapter::before { left: 0; }
+#quranChapter::after { right: 0; }
+#quranChapter :is(.arabic-verse, .verse-translation, .verse-notes, .source-note, .source-note a, #surahTitle) { color: var(--ink); }
+#surahTitle { font-family: 'Amiri Quran', serif; }
+#surahVerses { padding: 0; list-style: none; }
+#quranChapter .tajweed-nasal { color: var(--nasal); }
+#quranChapter .tajweed-madd { color: var(--madd); }
+#quranChapter .tajweed-short { color: var(--short); }
+#quranChapter .tajweed-echo { color: var(--echo); }
+#quranChapter .tajweed-silent { color: var(--silent); }
+.tajweed-short { color: #ffb567; }
+.ayah-number {
+  display: inline-grid; place-items: center; vertical-align: middle;
+  min-width: 1.65em; height: 1.65em; padding-inline: .18em; border-radius: 50%;
+  border: 3px double var(--gold); color: var(--ink); background: var(--paper);
+  font: 400 .57em/1 'Amiri Quran', serif;
+}
+.continuous #surahVerses {
+  direction: rtl; text-align: justify; font: calc(30px * var(--reading-scale, 1))/2.25 'Amiri Quran', serif;
+  background: repeating-linear-gradient(to bottom, transparent 0 calc(2.25em - 1px), var(--rule) calc(2.25em - 1px) 2.25em);
+}
+.continuous #surahVerses li, .continuous #surahVerses .arabic-verse { display: inline; margin: 0; padding: 0; border: 0; font: inherit; }
+.continuous :is(.verse-translation, .verse-notes, #translationCredit) { display: none; }
