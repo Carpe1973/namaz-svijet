@@ -136,6 +136,10 @@ function renderCompass(){
   $('northIndicator').style.transform=`rotate(${-(heading??0)}deg)`;
 }
 function setView(name){
+  if(name==='quran' && new URLSearchParams(location.search).get('legacy')!=='1'){
+    location.assign('./mushaf-novi.html');
+    return;
+  }
   const changed = $(name+'View').hidden;
   for(const view of VIEWS){
     const active = view === name;
@@ -788,6 +792,8 @@ $('closeSettings').addEventListener('click',()=>$('settingsDialog').close());
 $('saveSettings').addEventListener('click',saveSettings);
 $('resetOffsets').addEventListener('click',()=>{save(offsetKey(),{});makeOffsets()});
 $('clearManual').addEventListener('click',()=>{const p=zoned(new Date(),place.timezone);localStorage.removeItem(manualKey(p));makeManual()});
+const requestedTab=new URLSearchParams(location.search).get('tab');
+if(['times','qibla','schedule','quran'].includes(requestedTab))setView(requestedTab);
 updatePlace();loadTimings();setInterval(updateCountdown,1000);
 if(saved('ns3_follow_gps',false))startGPS();
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
