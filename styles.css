@@ -910,3 +910,73 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {backgr
 #quranChapter .measured-quran-guides {position:absolute;inset:0;z-index:0;pointer-events:none;}
 #quranChapter .measured-quran-guide {position:absolute;display:block;height:1px;background:rgba(96,112,96,.4);}
 #quranChapter #surahVerses {position:relative;z-index:1;}
+
+/* v3.29: restore unlined reading area, center the page-ending ornament.
+   No text or tajweed manipulation. */
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  background:none!important;
+  background-image:none!important;
+  text-align:justify;
+  text-align-last:center;
+  line-height:2.65;
+}
+#quranChapter .measured-quran-guides {display:none!important;}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider {
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:nowrap;
+  gap:13px;
+  direction:ltr;
+  width:100%;
+  min-height:72px;
+  padding:8px 0;
+  margin:26px 0 24px;
+  background:var(--paper);
+  border:0;
+  isolation:isolate;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::before,
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider::after {
+  content:"";
+  display:block;
+  flex:1 1 0;
+  min-width:0;
+  align-self:center;
+  height:1px;
+  padding:0;
+  margin:0;
+  background:#b89443;
+  transform:none;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span {
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 92px;
+  box-sizing:border-box;
+  width:92px;
+  min-width:92px;
+  height:56px;
+  padding:0;
+  border:2px solid #c39a46;
+  outline:2px solid #e0c47c;
+  outline-offset:3px;
+  border-radius:28px;
+  background:#00553d;
+  color:#f7e8be;
+  box-shadow:inset 0 0 0 2px #0b6a4a;
+  font:400 34px/1 Georgia,serif;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::before,
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::after {
+  content:"❦";
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font:400 22px/1 Georgia,serif;
+  color:#b88d36;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::before {left:-35px;}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::after {right:-35px;}
