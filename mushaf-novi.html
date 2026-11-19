@@ -54,7 +54,7 @@ body{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 <div class="legend"><span class="tajweed-short">Prirodni medd</span><span class="tajweed-madd">Produženi medd</span><span class="tajweed-nasal">Gunna</span><span class="tajweed-echo">Kalkala</span><span class="tajweed-silent">Neizgovoreni znak</span></div>
 <div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
 <p id="message" role="status"></p>
-<p class="note">Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boja se prikazuje samo kada se arapska riječ potpuno podudara s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
+<p class="note"><a href="./?tab=quran&amp;legacy=1">Otvori prethodni čitač Kur’ana</a>. Raspored: quran-qcf4 (MIT podaci), arapski font: Amiri Quran. Oznake tedžvida: Quran Foundation. Boja se prikazuje samo kada se arapska riječ potpuno podudara s izvorom. Ako nedostaju podaci, tekst ostaje neobojen. Probni čitač — uporedi s provjerenim Mushafom.</p>
 <nav class="nav"><a href="./?tab=times"><span>☪</span>Namazi</a><a href="./?tab=qibla"><span>🧭</span>Kibla</a><a href="./?tab=schedule"><span>▦</span>Vaktija</a><a class="current" href="./mushaf-novi.html"><span>📖</span>Kur’an</a></nav>
 </main>
 <script>
@@ -205,8 +205,7 @@ async function load(page){
       let applied=0;
       const words=data.lines.flatMap(line=>line.words.filter(w=>w.type==='word'));
       const spans=[...el('lines').querySelectorAll('.qword')];
-      let i=0;
-      for(const line of data.lines)for(const word of line.words)if(word.type==='word'){
+           for(const line of data.lines)for(const word of line.words)if(word.type==='word'){
         // Find source word node by its stable verse key and position.
         const node=spans.find(x=>x.dataset.verseKey===word.verse_key&&x.dataset.wordPosition===String(word.position));
         if(node && renderTajweedWord(node,word,rules))applied++;
