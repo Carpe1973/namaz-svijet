@@ -809,3 +809,48 @@ body:has(#quranView:not([hidden])) #quranChapter .ayah-number {
   font-size:.57em;
   font-weight:400;
 }
+
+
+/* v3.24: avoid horizontal guides cutting through Uthmani glyphs.
+   Show verified Mushaf page numbers in the reading flow instead. */
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  background:none!important;
+  line-height:2.35;
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider,
+#quranChapter.continuous #surahVerses li.mushaf-page-divider {
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  direction:ltr;
+  position:relative;
+  top:0;
+  width:100%;
+  margin:24px 0 18px;
+  padding:4px 0;
+  min-height:42px;
+  border:0;
+  font:400 24px/1.2 Georgia,serif;
+  color:var(--gold);
+  break-inside:avoid;
+}
+#quranChapter.continuous #surahVerses li.mushaf-page-divider::before,
+#quranChapter.continuous #surahVerses li.mushaf-page-divider::after {
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--rule);
+}
+#quranChapter.continuous #surahVerses li.mushaf-page-divider span {
+  display:grid;
+  place-items:center;
+  width:49px;
+  height:49px;
+  border:3px double var(--gold);
+  border-radius:44% 32% 44% 32%;
+  background:var(--paper);
+  color:var(--ink);
+  font:400 21px/1 Georgia,serif;
+  padding:0;
+}
