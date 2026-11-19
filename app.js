@@ -136,10 +136,6 @@ function renderCompass(){
   $('northIndicator').style.transform=`rotate(${-(heading??0)}deg)`;
 }
 function setView(name){
-  if(name==='quran' && new URLSearchParams(location.search).get('legacy')!=='1'){
-    location.assign('./mushaf-novi.html?v=3');
-    return;
-  }
   const changed = $(name+'View').hidden;
   for(const view of VIEWS){
     const active = view === name;
