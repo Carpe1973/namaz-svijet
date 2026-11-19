@@ -2,6 +2,7 @@
 <html lang="bs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#063f2d"><title>Mushaf Tajweed · Proba</title>
 <style>
+@font-face{font-family:'Amiri Quran';src:url('./fonts/amiri-quran.woff') format('woff');font-display:swap}
 *{box-sizing:border-box}body{margin:0;background:#eee3c9;color:#143c2f;font:16px system-ui,-apple-system,sans-serif}
 header{position:sticky;top:0;z-index:9;background:#03432e;color:#fff0c8;border-bottom:3px double #c5a15d;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 header a{color:inherit;text-decoration:none;font-weight:650}header strong{font-size:17px}
@@ -14,8 +15,8 @@ button{cursor:pointer}button:disabled{opacity:.4}input[type=number]{width:78px;t
 .reader[data-theme=cream]{--paper:#fff1d2;--rule:#dac49a}
 .reader h1{text-align:center;font:600 20px Georgia,serif;margin:0 0 8px;color:var(--ink)}
 #lines{direction:rtl;display:flex;flex-direction:column;gap:0}
-.qline{direction:rtl;display:flex;align-items:center;justify-content:space-between;min-height:3.55em;gap:0;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(19px,4.6vw,29px);font-weight:400;line-height:1.55}
-.qline:last-child{border-bottom:0}.qword{display:inline-block;flex:0 1 auto;text-align:center;min-width:0;font-family:var(--qcf-font),'Amiri Quran',serif;font-variation-settings:normal;white-space:nowrap}
+.qline{direction:rtl;display:flex;align-items:center;justify-content:space-between;min-height:3.15em;gap:.04em;white-space:nowrap;border-bottom:1px solid var(--rule);font-size:clamp(17px,4.3vw,28px);font-weight:400;line-height:1.55}
+.qline:last-child{border-bottom:0}.qword{display:inline-block;flex:0 1 auto;text-align:center;min-width:0;font-family:'Amiri Quran','Geeza Pro',serif;white-space:nowrap}
 #fallback{display:none;width:100%;height:auto;max-height:calc(100dvh - 245px);object-fit:contain}
 #message{min-height:30px;text-align:center;font-size:13px;margin:9px auto;color:#355a49}
 .note{max-width:650px;margin:14px auto;font-size:12px;line-height:1.5;color:#57675c}
@@ -30,14 +31,13 @@ label{font-size:13px;font-weight:600}
 <select id="theme" aria-label="Pozadina"><option value="green">Zelena</option><option value="cream">Krem</option><option value="night">Noćna</option></select></div>
 <div class="reader" id="reader" data-theme="green"><h1 id="heading">Stranica 4 / 604</h1><section id="lines" lang="ar" dir="rtl"></section><img id="fallback" alt="Originalna stranica Mushafa"></div>
 <p id="message" role="status"></p>
-<p class="note">Eksperimentalni QCF4 prikaz sa izvornim redovima (boje tedžvida još nisu uključene). Ako font ili podaci ne mogu da se učitaju, prikazuje se izvorna slika stranice. Font dolazi sa Quran Foundation servera; korištenje i distribucija zavise od njihovih uslova. Podaci o rasporedu: quran-qcf4 (MIT za JSON). Ovaj pregled nije zamjena za provjeren Mushaf.</p>
+<p class="note">Probni prikaz čitljivog arapskog teksta u izvornom rasporedu redova. Koristi naš Amiri Quran font, bez QCF kodiranih znakova. Boje tedžvida još nisu uključene. Ako podaci ne mogu da se učitaju, prikazuje se slika originalne stranice. Podaci o rasporedu: quran-qcf4 (MIT za JSON). Ovaj pregled nije zamjena za provjeren Mushaf.</p>
 </main>
 <script>
 'use strict';
 const el=id=>document.getElementById(id);
 const root='https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/';
-const fontRoot='https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2/';
-let current=4,run=0,face=null;
+let current=4,run=0;
 try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
 function fallback(page,reason){
  el('lines').replaceChildren();el('lines').hidden=true;
@@ -49,7 +49,7 @@ function fallback(page,reason){
 async function load(page){
  if(!Number.isInteger(page)||page<1||page>604)return;
  const id=++run;current=page;el('page').value=page;
- el('heading').textContent='Stranica '+page+' / 604';el('message').textContent='Učitavanje fonta i rasporeda…';
+ el('heading').textContent='Stranica '+page+' / 604';el('message').textContent='Učitavanje arapskog teksta…';
  el('prev').disabled=page===1;el('next').disabled=page===604;
  el('fallback').style.display='none';el('fallback').removeAttribute('src');el('lines').hidden=false;el('lines').replaceChildren();
  try{localStorage.setItem('ns_qcf_test_page',String(page))}catch{}
@@ -59,33 +59,21 @@ async function load(page){
   if(!response.ok)throw Error('Podaci za stranicu nisu dostupni.');
   const data=await response.json();
   if(!Array.isArray(data.lines)||!data.lines.length||!data.lines.every(line=>Array.isArray(line.words)))throw Error('Neispravni podaci o redovima.');
-  // QCF4 data and QCF4 font must use the same glyph encoding.
-  const name=data.font;
-  if(!/^QCF4_Hafs_\d{2}$/.test(name))throw Error('Nepoznat font stranice.');
-  let loaded=document.fonts.check('20px "'+name+'"');
-  if(!loaded){
-   const loadedFace=new FontFace(name,'url('+fontRoot+name+'_W.woff2)',{style:'normal',weight:'400'});
-   await loadedFace.load();
-   if(id!==run)return;
-   document.fonts.add(loadedFace);
-   face=loadedFace;
-  }
   if(id!==run)return;
-  el('lines').style.setProperty('--qcf-font','"'+name+'"');
   const group=document.createDocumentFragment();
   for(const line of data.lines){
    const row=document.createElement('div');row.className='qline';
    for(const word of line.words){
     const span=document.createElement('span');span.className='qword';
-    // Glyph code and font come from the same QCF4 source.
-    span.textContent=word.char || word.text || '';
+    // Readable Uthmani text; never display private-use QCF glyph codes.
+    span.textContent=word.text || '';
     span.title=word.text || '';
     row.append(span);
    }
    group.append(row);
   }
   el('lines').append(group);
-  el('message').textContent='QCF4: '+data.lines.length+' izvornih redova · stranica '+page;
+  el('message').textContent='Arapski tekst: '+data.lines.length+' redova · stranica '+page;
  }catch(error){if(id!==run)return;fallback(page,error?.message||'Font nije dostupan.');}
 }
 el('prev').onclick=()=>load(current-1);el('next').onclick=()=>load(current+1);
