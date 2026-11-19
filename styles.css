@@ -517,3 +517,16 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses .arabic
   letter-spacing:normal;
   text-align:right;
 }
+
+/* v3.19: protect outer Arabic glyphs and harakat from the ornamental border. */
+body:has(#quranView:not([hidden])) #quranChapter {
+  padding-inline:clamp(18px,4.6vw,30px);
+}
+body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses {
+  padding-inline:2px;
+}
+@media(max-width:390px){
+  body:has(#quranView:not([hidden])) #quranChapter {
+    padding-inline:18px;
+  }
+}
