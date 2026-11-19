@@ -161,6 +161,8 @@ function renderTajweedWord(node,word,rules){
  for(const segment of segments){
    for(const ch of [...normalize(segment.text)])sourceRules.push(segment.rule);
  }
+ // Replace the original uncolored word; never append a second copy.
+ node.replaceChildren();
  const units=[...new Intl.Segmenter('ar',{granularity:'grapheme'}).segment(word.text)].map(s=>s.segment);
  let offset=0,colored=false,lastRule=null,lastText='';
  const emit=()=>{
@@ -178,7 +180,13 @@ function renderTajweedWord(node,word,rules){
    if(lastText && lastRule!==rule)emit();
    lastRule=rule;lastText+=unit;
  }
- emit();return colored;
+ emit();
+ // Last safeguard: coloring may never alter, duplicate, or omit Quran text.
+ if(node.textContent!==word.text){
+   node.textContent=word.text;
+   return false;
+ }
+ return colored;
 }
 
 try{let p=Number(localStorage.getItem('ns_qcf_test_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
