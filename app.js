@@ -136,10 +136,6 @@ function renderCompass(){
   $('northIndicator').style.transform=`rotate(${-(heading??0)}deg)`;
 }
 function setView(name){
-  if(name==='quran'){
-    location.assign('./mushaf-pdf-tedzvid.html');
-    return;
-  }
   const changed = $(name+'View').hidden;
   for(const view of VIEWS){
     const active = view === name;
@@ -153,7 +149,7 @@ function setView(name){
   $('quranSettingsTab').hidden = true;
   if(changed) window.scrollTo(0, 0);
   if(name === 'schedule') renderSchedule();
-  if(name === 'quran' && $('quranChapter').hidden && !quranLoading) openQuran();
+  // PDF reader is embedded in quranView. Do not invoke legacy renderer.
 }
 
 function panelMessage(id, message){
