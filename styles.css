@@ -980,3 +980,12 @@ body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mush
 }
 body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::before {left:-35px;}
 body:has(#quranView:not([hidden])) #quranChapter.continuous #surahVerses li.mushaf-page-divider span::after {right:-35px;}
+
+/* Original PDF view stays within the main Namaz Svijet tabs. */
+#quranView > :not(.embedded-quran-reader){display:none!important}
+#quranView .embedded-quran-reader{display:block;width:100%;max-width:100%;margin:0 auto;background:#f1e5c8;color:#114331}
+#quranView .embedded-quran-top{padding:9px 12px;background:#03432e;color:#ffebc4;border:2px solid #bd9954;text-align:center}
+#embeddedMushaf{display:block;width:100%;height:calc(100dvh - 242px);min-height:370px;border:2px solid #bd9954;background:#fff}
+#quranView .embedded-quran-help{margin:6px 5px 0;font-size:12px;text-align:center;line-height:1.4}
+#quranView .embedded-quran-help a{color:#175940}
+body.quran-mode .app-shell{max-width:760px}
