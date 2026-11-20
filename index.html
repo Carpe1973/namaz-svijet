@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=3.36">
+  <link rel="stylesheet" href="./styles.css?v=3.37">
   <title>Namaz Svijet</title>
 </head>
 <body>
@@ -64,6 +64,11 @@
       <p id="scheduleSource" class="source-note"></p>
     </section>
     <section id="quranView" class="reading-view" aria-labelledby="quranTitle" hidden>
+      <div class="embedded-quran-reader">
+        <div class="embedded-quran-top"><strong>📖 Kur’an s tedžvidom</strong></div>
+        <iframe id="embeddedMushaf" title="Mushaf – originalni PDF s tedžvidom" src="./mushaf-pdf-tedzvid.html" loading="lazy"></iframe>
+        <p class="embedded-quran-help">Originalni PDF bez izmjena. Ako preglednik ne podržava prikaz, <a href="./mushaf-pdf-tedzvid.html" target="_blank" rel="noopener">otvori puni prikaz</a>.</p>
+      </div>
       <header class="mushaf-header">
         <div class="mushaf-prayer-strip"><span>Namaz Svijet</span><span class="mushaf-crescent" aria-hidden="true">☪</span><span>Kur’an</span></div>
         <div class="mushaf-header-row">
@@ -142,6 +147,6 @@
 <script src="./al-badr-2026.js" defer></script>
 <script src="./cci-2026.js" defer></script>
 <script src="./i18n.js?v=3.24" defer></script>
-<script src="./app.js?v=3.36" defer></script>
+<script src="./app.js?v=3.37" defer></script>
 </body>
 </html>
