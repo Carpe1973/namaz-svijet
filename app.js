@@ -137,7 +137,7 @@ function renderCompass(){
 }
 function setView(name){
   if(name==='quran'){
-    location.assign('./kur-an-sigurno.html');
+    location.assign('./mushaf-pdf-tedzvid.html');
     return;
   }
   const changed = $(name+'View').hidden;
