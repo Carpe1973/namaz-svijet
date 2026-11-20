@@ -136,6 +136,10 @@ function renderCompass(){
   $('northIndicator').style.transform=`rotate(${-(heading??0)}deg)`;
 }
 function setView(name){
+  if(name==='quran'){
+    location.assign('./kur-an-sigurno.html');
+    return;
+  }
   const changed = $(name+'View').hidden;
   for(const view of VIEWS){
     const active = view === name;
