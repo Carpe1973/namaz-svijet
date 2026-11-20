@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="bs">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#00432d"><title>Mushaf – probni prikaz | Namaz Svijet</title>
+<style>
+:root{color-scheme:light;--dark:#034b36;--gold:#cda34e;--paper:#f8efda}
+*{box-sizing:border-box}body{margin:0;background:#eee2c5;color:#10392e;font:16px system-ui,-apple-system,sans-serif}
+header{position:sticky;top:0;z-index:2;background:linear-gradient(140deg,#075b42,#003c2c);color:#f8edc9;border-bottom:3px double var(--gold);padding:12px max(10px,calc((100vw - 760px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
+header a{color:#f9e4ac;text-decoration:none;font-weight:700;font-size:14px}
+header strong{font:700 18px Georgia,serif}main{max-width:760px;margin:auto;padding:12px 8px 24px}
+h1{text-align:center;font:600 20px Georgia,serif;margin:4px 0 10px}
+.reader{position:relative;border:6px double #be9345;outline:2px solid #006046;outline-offset:-10px;box-shadow:inset 0 0 0 4px #e8cb82;background:var(--paper);padding:14px 10px;margin:0 auto;max-width:650px}
+.reader img{display:block;width:100%;height:auto;max-height:calc(100dvh - 230px);object-fit:contain;margin:auto}
+.controls{display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;margin:14px auto}
+button,input,select{font:inherit;border:1px solid #a88b4b;border-radius:10px;padding:10px;background:#fff7e6;color:#10392e}
+button{cursor:pointer}button:disabled{opacity:.35}button.main{background:var(--dark);color:white;border-color:var(--gold)}
+input{width:84px;text-align:center}
+.controls label{font-weight:600;font-size:13px}
+#status{text-align:center;min-height:24px;font-size:13px;color:#35584a}
+small.note{display:block;max-width:650px;margin:14px auto;font-size:12px;color:#485b51;line-height:1.5}
+@media (max-width:390px){.reader{padding:9px 5px}.reader img{max-height:calc(100dvh - 215px)}.controls{gap:5px}button,input{padding:9px 7px}}
+</style></head>
+<body><header><a href="./">❮ Namaz Svijet</a><strong>☪ Mushaf · Proba</strong></header>
+<main><h1>Kur’an – 604 stranice</h1>
+<div class="reader"><img id="pageImage" alt="Stranica Kur'ana" decoding="async"></div>
+<div class="controls">
+<button id="prev" class="main" type="button">❮ Prethodna</button>
+<label for="pageNumber">Stranica</label><input id="pageNumber" type="number" min="1" max="604" step="1" inputmode="numeric" value="1">
+<span>/ 604</span><button id="next" class="main" type="button">Sljedeća ❯</button>
+</div>
+<p id="status" role="status"></p>
+<small class="note">Probni prikaz: originalne slike stranica Mushafa. Brojevi ajeta, redovi i oznake stranica dio su slike; zasad nema obojenog tedžvida niti prilagodljivog fonta. Izvor slika: Quran Images (Miftah Fentaw, MIT; prema Quran-PNG / quran.com-images). <a href="https://github.com/Miftah-Fentaw/Quran-Images">Izvor i licenca</a>.</small>
+</main>
+<script>
+'use strict';
+const img=document.getElementById('pageImage'),input=document.getElementById('pageNumber'),status=document.getElementById('status');
+const base='https://raw.githubusercontent.com/Miftah-Fentaw/Quran-Images/main/png/';
+let current=1;
+try{const p=Number(localStorage.getItem('ns_mushaf_trial_page'));if(Number.isInteger(p)&&p>=1&&p<=604)current=p;}catch{}
+function source(page){return base+page+'.png';}
+function load(page){
+ if(!Number.isInteger(page)||page<1||page>604)return;
+ current=page;input.value=page;img.alt='Mushaf, stranica '+page+' od 604';
+ status.textContent='Učitavanje stranice '+page+'…';
+ img.src=source(page);
+ document.getElementById('prev').disabled=page===1;
+ document.getElementById('next').disabled=page===604;
+ try{localStorage.setItem('ns_mushaf_trial_page',String(page))}catch{}
+}
+img.addEventListener('load',()=>{status.textContent='Stranica '+current+' / 604';if(current<604){const next=new Image();next.src=source(current+1);}});
+img.addEventListener('error',()=>{status.textContent='Stranica se nije učitala. Provjeri internet i pokušaj ponovo.'});
+document.getElementById('prev').onclick=()=>load(current-1);
+document.getElementById('next').onclick=()=>load(current+1);
+input.addEventListener('change',()=>load(Number(input.value)));
+let x0=null;img.addEventListener('touchstart',e=>{if(e.touches.length===1)x0=e.touches[0].clientX},{passive:true});
+img.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>65)load(current+(dx>0?1:-1))},{passive:true});
+load(current);
+</script></body></html>
