@@ -2,12 +2,12 @@
    GPS, kompas i ručni raspored su opt-in; izvor vremena je jasno označen. */
 'use strict';
 const $=id=>document.getElementById(id);
-import { APP_LANGUAGES, UI_TEXT } from './i18n.js?v=3.39';
+import { APP_LANGUAGES, UI_TEXT } from './i18n.js?v=3.40';
 import {
   KEYS, PRAYERS, MOSQUE_TIMEZONE, cleanTime, dayPlus, displayPrayerTime,
   fetchTimings, keyOf, localEpoch, pad, zoned
 } from './prayer-times.mjs';
-import { createPrayerReminders } from './prayer-reminders.mjs?v=3.39';
+import { createPrayerReminders } from './prayer-reminders.mjs?v=3.40';
 
 const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:MOSQUE_TIMEZONE};
 const AL_BADR_URL='https://mawaqit.net/fr/mosquee-al-badr-le-locle';
@@ -124,7 +124,7 @@ function reminderContext(){
   }
   return {config, pushConfig, date, today:dayData, tomorrow:tomorrowData, manualAt:day=>manual(day)?.times};
 }
-const prayerReminders=createPrayerReminders({translate:t, readContext:reminderContext, saved, save});
+const prayerReminders=createPrayerReminders({translate:t, audioLanguage:()=>appLanguage, readContext:reminderContext, saved, save});
 function bearing(lat,lon){const r=Math.PI/180,phi=lat*r,d=(39.826206-lon)*r,kaaba=21.422487*r;return (Math.atan2(Math.sin(d),Math.cos(phi)*Math.tan(kaaba)-Math.sin(phi)*Math.cos(d))/r+360)%360}
 function direction(d){return t('directions')[Math.round(d/45)%8]}
 function dateText(p){

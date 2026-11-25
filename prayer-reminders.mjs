@@ -3,7 +3,7 @@ import { ALERT_WINDOW, KEYS, dayPlus, displayPrayerTime, fetchTimings, keyOf, pr
 const API = './api/prayer-alerts';
 const MODES = ['off', 'foreground', 'push'];
 
-export function createPrayerReminders({translate, readContext, saved, save}) {
+export function createPrayerReminders({translate, audioLanguage, readContext, saved, save}) {
   const modeSelect = document.getElementById('prayerAlertMode');
   const testButton = document.getElementById('testPrayerAlert');
   const feedback = document.getElementById('prayerAlertFeedback');
@@ -12,6 +12,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
   let mode = saved('ns_alert_mode', 'off');
   if (!MODES.includes(mode)) mode = 'off';
   let audio;
+  let voice;
   let alerts = [];
   let revision = 0;
   let yesterday;
@@ -27,14 +28,45 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
     modeSelect.value = mode;
     testButton.hidden = mode === 'off';
     document.getElementById('prayerAlertHint').hidden = mode === 'foreground';
-    document.getElementById('prayerAlertAudioHint').hidden = mode !== 'foreground';
+    document.getElementById('prayerAlertAudioHint').hidden = mode === 'off';
   }
   function startAudio() {
     if (!Audio) return Promise.reject(new Error('Audio is unavailable'));
     audio ||= new Audio();
+    loadVoice().catch(() => {});
     return audio.resume();
   }
+  function loadVoice() {
+    const code = audioLanguage();
+    if (voice?.code === code) return voice.ready;
+    const clip = {code};
+    voice = clip;
+    clip.ready = fetch(new URL(`./assets/prayer-alert/${code}.mp3`, import.meta.url), {
+      signal: AbortSignal.timeout(5000)
+    }).then(async response => {
+      if (!response.ok) throw new Error('Voice clip is unavailable');
+      clip.buffer = await audio.decodeAudioData(await response.arrayBuffer());
+    }).catch(error => {
+      if (voice === clip) voice = undefined;
+      throw error;
+    });
+    return clip.ready;
+  }
+  function playVoice() {
+    if (audio?.state !== 'running' || voice?.code !== audioLanguage() || !voice.buffer) return false;
+    const source = audio.createBufferSource();
+    source.buffer = voice.buffer;
+    source.connect(audio.destination);
+    source.start();
+    return true;
+  }
+  async function previewVoice() {
+    await startAudio();
+    await loadVoice();
+    return playVoice();
+  }
   function playAlert() {
+    if (playVoice()) return true;
     if (audio?.state !== 'running') return false;
     const start = audio.currentTime;
     [660, 880, 660].forEach((frequency, index) => {
@@ -117,26 +149,27 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
     return sync;
   }
 
+  async function refreshPush(pushConfig, current) {
+    if (!pushSupported() || Notification.permission !== 'granted') {
+      showFeedback('alertsPermission');
+      return;
+    }
+    try {
+      await queuePush(pushConfig, false);
+      if (current === revision) showFeedback('');
+    } catch {
+      if (current === revision) showFeedback('alertsSyncError');
+    }
+  }
   async function refresh() {
     const current = ++revision;
     alerts = [];
     if (mode === 'off') return;
+    if (audio) loadVoice().catch(() => {});
     const context = readContext();
     if (!context) return;
     const {config, pushConfig, date, today, tomorrow, manualAt} = context;
-    if (mode === 'push') {
-      if (!pushSupported() || Notification.permission !== 'granted') {
-        showFeedback('alertsPermission');
-        return;
-      }
-      try {
-        await queuePush(pushConfig, false);
-        if (current === revision) showFeedback('');
-      } catch {
-        if (current === revision) showFeedback('alertsSyncError');
-      }
-      return;
-    }
+    if (mode === 'push') refreshPush(pushConfig, current);
     const displayed = (data, day) => Object.fromEntries(KEYS.map(key => [
       key, displayPrayerTime(key, data?.timings, config, manualAt(day))
     ]));
@@ -167,6 +200,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
           showFeedback('alertsPushUnsupported');
           return;
         }
+        startAudio().catch(() => {});
         if (await Notification.requestPermission() !== 'granted') {
           showFeedback('alertsPermission');
           return;
@@ -199,14 +233,13 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
     modeSelect.disabled = testButton.disabled = true;
     showFeedback('');
     try {
-      if (mode === 'foreground') {
-        await startAudio();
-        if (!playAlert()) throw new Error('Audio is suspended');
-        showFeedback('alertTestMessage');
-      } else if (mode === 'push') {
+      const spoken = previewVoice().catch(() => false);
+      if (mode === 'push') {
         const token = saved('ns_alert_token', '');
         await request(API + '/' + token + '/test', {method: 'POST'});
-        showFeedback('alertsTestSent');
+        showFeedback(await spoken ? 'alertsTestSent' : 'alertsTestSentWithoutVoice');
+      } else {
+        showFeedback(await spoken ? 'alertTestMessage' : 'alertsAudioError');
       }
     } catch {
       showFeedback(mode === 'foreground' ? 'alertsAudioError' : 'alertsPushTestError');
@@ -216,7 +249,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
   }
 
   function check(now) {
-    if (mode !== 'foreground' || document.hidden) return;
+    if (mode === 'off' || document.hidden) return;
     const alert = alerts.find(item => item.at <= now && now < item.at + ALERT_WINDOW);
     if (!alert) return;
     const id = alert.id + '-' + alert.at;
@@ -224,7 +257,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
     if (Object.hasOwn(recent, id) || !playAlert()) return;
     const updated = Object.fromEntries(Object.entries(recent).filter(([, at]) => now - at < 86_400_000));
     save('ns_alert_played', {...updated, [id]: now});
-    notice.textContent = translate(alert.prayer) + ' · ' + translate('prayerEnding').replace('{time}', alert.end);
+    notice.textContent = `${translate(alert.prayer)} · ${translate('prayerAlertSpeech')} · ${alert.end}`;
     clearTimeout(noticeTimer);
     noticeTimer = setTimeout(() => { notice.textContent = ''; }, ALERT_WINDOW);
   }
@@ -232,7 +265,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
   modeSelect.addEventListener('change', changeMode);
   testButton.addEventListener('click', test);
   window.addEventListener('online', refresh);
-  const unlockAudio = () => { if (mode === 'foreground' && audio?.state !== 'running') startAudio().catch(() => {}); };
+  const unlockAudio = () => { if (mode !== 'off' && audio?.state !== 'running') startAudio().catch(() => {}); };
   document.addEventListener('pointerup', unlockAudio, {passive: true});
   document.addEventListener('keydown', unlockAudio);
   renderMode();

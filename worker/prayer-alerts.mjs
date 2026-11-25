@@ -164,7 +164,7 @@ export class PrayerAlerts {
     const keys = await keyResponse.json();
     const index = Object.keys(APP_LANGUAGES).indexOf(settings.config.language);
     const title = alert ? UI_TEXT[alert.prayer][index] : 'Namaz Svijet';
-    const body = alert ? UI_TEXT.prayerEnding[index].replace('{time}', alert.end) : UI_TEXT.alertTestMessage[index];
+    const body = alert ? `${UI_TEXT.prayerAlertSpeech[index]} · ${alert.end}` : UI_TEXT.alertTestMessage[index];
     const payload = await buildPushPayload({
       data: JSON.stringify({title, body, tag: alert?.id || 'prayer-alert-test'}),
       options: {
