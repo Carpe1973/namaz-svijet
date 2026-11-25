@@ -2,14 +2,18 @@
    GPS, kompas i ručni raspored su opt-in; izvor vremena je jasno označen. */
 'use strict';
 const $=id=>document.getElementById(id);
-const PRAYERS=['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-const KEYS=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'];
+import { APP_LANGUAGES, UI_TEXT } from './i18n.js?v=3.38';
+import {
+  KEYS, PRAYERS, MOSQUE_TIMEZONE, cleanTime, dayPlus, displayPrayerTime,
+  fetchTimings, keyOf, localEpoch, pad, zoned
+} from './prayer-times.mjs';
+import { createPrayerReminders } from './prayer-reminders.mjs';
 
-const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:'Europe/Zurich'};
+const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:MOSQUE_TIMEZONE};
 const AL_BADR_URL='https://mawaqit.net/fr/mosquee-al-badr-le-locle';
 const localMosques = [
-  {name: 'Al-Badr', latitude: 47.0520851, longitude: 6.7489249, url: AL_BADR_URL, calendar: AL_BADR_2026},
-  {name: 'CCI de La Chaux-de-Fonds', latitude: 47.101633789772, longitude: 6.8250626550335, url: 'https://mawaqit.net/fr/ccicdf', calendar: CCI_2026}
+  {id: 'alBadr', name: 'Al-Badr', latitude: 47.0520851, longitude: 6.7489249, url: AL_BADR_URL},
+  {id: 'cci', name: 'CCI de La Chaux-de-Fonds', latitude: 47.101633789772, longitude: 6.8250626550335, url: 'https://mawaqit.net/fr/ccicdf'}
 ];
 function nearestMosque(position){
   let nearest = null, limit = 10;
@@ -77,7 +81,6 @@ function selectedMosque(){
 }
 function mosqueLabel(){return selectedMosque() === localMosques[0] ? t('alBadr') : selectedMosque()?.name}
 function prayerTimezone(){return selectedMosque()?DEFAULT.timezone:(place.timezone||'UTC')}
-const pad=n=>String(n).padStart(2,'0');
 const saved=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
 const languageCodes = Object.keys(APP_LANGUAGES);
@@ -89,27 +92,39 @@ const usesGpsPlace = () => place.name === 'Moja GPS lokacija';
 let place=saved('ns_place',DEFAULT),method=String(saved('ns_method','3')),school=String(saved('ns_school','0'));
 let dayData=null,tomorrowData=null,lastDate='',busy=false,requestId=0,watchId=null,compassActive=false,heading=null;
 const status=message=>$('status').textContent=message||'';
-function zoned(date,tz){
-  try{return Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date).filter(x=>x.type!=='literal').map(x=>[x.type,Number(x.value)]))}
-  catch{return zoned(date,'UTC')}
-}
-function keyOf(p){return `${p.year}-${pad(p.month)}-${pad(p.day)}`}
-function dayPlus(p,n){const d=new Date(Date.UTC(p.year,p.month-1,p.day+n));return {year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate()}}
-function localEpoch(p,hhmm,tz){
-  const [h,m]=hhmm.split(':').map(Number),desired=Date.UTC(p.year,p.month-1,p.day,h,m);let guess=desired;
-  for(let i=0;i<5;i++){const z=zoned(new Date(guess),tz);const actual=Date.UTC(z.year,z.month-1,z.day,z.hour,z.minute,z.second);const diff=desired-actual;if(Math.abs(diff)<1000)break;guess+=diff}
-  return guess;
-}
-function cleanTime(s){const m=String(s||'').match(/\b(\d{1,2}):(\d{2})\b/);if(!m||Number(m[1])>23||Number(m[2])>59)return null;return `${pad(Number(m[1]))}:${m[2]}`}
 function placeKey(){return `${Number(place.latitude).toFixed(3)},${Number(place.longitude).toFixed(3)}`}
 function offsetKey(){return `ns3_offsets_${placeKey()}`}
 function manualKey(p){return `ns3_manual_${placeKey()}_${keyOf(p)}`}
 function offsets(){return saved(offsetKey(),{})}
 function manual(p){return saved(manualKey(p),null)}
-function adjusted(k,raw){const t=cleanTime(raw);if(!t)return null;const [h,m]=t.split(':').map(Number),delta=Number(offsets()[k]||0);const mins=((h*60+m+delta)%1440+1440)%1440;return `${pad(Math.floor(mins/60))}:${pad(mins%60)}`}
-function displayTime(k,data,p){
-  if(selectedMosque())return cleanTime(data?.timings?.[k]);
-  const fromManual=manual(p)?.times?.[k];return cleanTime(fromManual)||adjusted(k,data?.timings?.[k])}
+function timingConfig(){
+  return {mosque:selectedMosque()?.id, latitude:place.latitude, longitude:place.longitude, method, school};
+}
+function displayTime(key,data,p){
+  return displayPrayerTime(key,data?.timings,{mosque:selectedMosque()?.id, offsets:offsets()},manual(p)?.times);
+}
+function reminderContext(){
+  const timezone=prayerTimezone();
+  const date=zoned(new Date(),timezone);
+  if(!dayData || keyOf(date)!==lastDate || !dayData.timings) return null;
+  const config={...timingConfig(), timezone, offsets:offsets(), language:appLanguage};
+  const manualTimes = Object.fromEntries([-1,0,1].map(offset=>{
+    const day=dayPlus(date,offset);
+    return [keyOf(day), manual(day)?.times];
+  }));
+  const pushConfig={...config, manual:manualTimes};
+  if(config.mosque){
+    delete pushConfig.latitude;
+    delete pushConfig.longitude;
+    delete pushConfig.manual;
+    delete pushConfig.offsets;
+  }else if(usesGpsPlace()){
+    pushConfig.latitude=Number(config.latitude.toFixed(3));
+    pushConfig.longitude=Number(config.longitude.toFixed(3));
+  }
+  return {config, pushConfig, date, today:dayData, tomorrow:tomorrowData, manualAt:day=>manual(day)?.times};
+}
+const prayerReminders=createPrayerReminders({translate:t, readContext:reminderContext, saved, save});
 function bearing(lat,lon){const r=Math.PI/180,phi=lat*r,d=(39.826206-lon)*r,kaaba=21.422487*r;return (Math.atan2(Math.sin(d),Math.cos(phi)*Math.tan(kaaba)-Math.sin(phi)*Math.cos(d))/r+360)%360}
 function direction(d){return t('directions')[Math.round(d/45)%8]}
 function dateText(p){
@@ -434,22 +449,11 @@ async function openQuran(){
     if(request === quranRequest) quranLoading = false;
   }
 }
-async function timings(p){
-  if(selectedMosque()){
-    const row=selectedMosque().calendar[keyOf(p)];
-    const timings=row?Object.fromEntries(KEYS.map((key,i)=>[key,row[i]])):null;
-    return {timings};
-  }
-  const date=`${pad(p.day)}-${pad(p.month)}-${p.year}`;
-  const params=new URLSearchParams({latitude:String(place.latitude),longitude:String(place.longitude),method,school});
-  const response=await fetch(`https://api.aladhan.com/v1/timings/${date}?${params}`,{cache:'no-store'});
-  if(!response.ok)throw Error('Servis za vremena nije dostupan.');
-  const json=await response.json();if(json.code!==200||!json.data?.timings)throw Error('Servis nije vratio vremena.');
-  return json.data;
-}
+function timings(p){return fetchTimings(p,timingConfig())}
 async function loadTimings(){
   const mine=++requestId;busy=true;status(t('loading'));updatePlace();
   dayData=null;tomorrowData=null;
+  prayerReminders.refresh();
   clearTimes();
   resetCountdown(t('loading'));
   $('sourceNote').textContent='';
@@ -508,6 +512,7 @@ function renderDay(){
       ?`${t('manualSource')} · ${m.mosque||t('selectedSource')}. ${t('otherTimes')} · AlAdhan, ${t('calculated')}.`
       :`${t('source')} · AlAdhan, ${t('calculated')}.`;
   }
+  prayerReminders.refresh();
   updateCountdown();
 }
 function updateCountdown(){
@@ -516,6 +521,7 @@ function updateCountdown(){
   $('localClock').textContent=`${t('local')} ${pad(p.hour)}:${pad(p.minute)}`;
   if(key!==lastDate){if(!busy)loadTimings();return}
   if(selectedMosque()&&!dayData.timings){resetCountdown(t('missing'));return}
+  prayerReminders.check(now.getTime());
   const fajr=displayTime('Fajr',dayData,p),sunrise=displayTime('Sunrise',dayData,p);
   let next;
   if(fajr&&sunrise){const f=localEpoch(p,fajr,timezone),s=localEpoch(p,sunrise,timezone);if(now.getTime()>=f&&now.getTime()<s)next={key:'Fajr',name:t('fajrEnd'),time:s,label:`${t('Sunrise')} · ${sunrise}`}}
@@ -711,6 +717,7 @@ $('appLanguage').replaceChildren(...languageCodes.map(code => new Option(APP_LAN
 $('appLanguage').value = appLanguage;
 $('appLanguage').addEventListener('change', event => {
   appLanguage = event.target.value;
+  prayerReminders.showFeedback();
   save('ns_language', appLanguage);
   applyAppLanguage();
   updatePlace();
@@ -795,7 +802,7 @@ $('settingsButton').addEventListener('click',()=>{
 $('closeSettings').addEventListener('click',()=>$('settingsDialog').close());
 $('saveSettings').addEventListener('click',saveSettings);
 $('resetOffsets').addEventListener('click',()=>{save(offsetKey(),{});makeOffsets()});
-$('clearManual').addEventListener('click',()=>{const p=zoned(new Date(),place.timezone);localStorage.removeItem(manualKey(p));makeManual()});
+$('clearManual').addEventListener('click',()=>{const p=zoned(new Date(),place.timezone);localStorage.removeItem(manualKey(p));makeManual();if(dayData)renderDay()});
 const requestedTab=new URLSearchParams(location.search).get('tab');
 if(['times','qibla','schedule','quran'].includes(requestedTab))setView(requestedTab);
 updatePlace();loadTimings();setInterval(updateCountdown,1000);

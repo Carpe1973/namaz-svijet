@@ -10,6 +10,21 @@ const APP_LANGUAGES = {
 const UI_TEXT = {
   subtitle: ['Namaska vremena širom svijeta','Horaires de prière dans le monde','Gebetszeiten weltweit','Prayer times worldwide'],
   settings: ['Postavke','Paramètres','Einstellungen','Settings'],
+  alertsLabel: ['Upozorenje 20 minuta prije kraja namaza','Alerte 20 minutes avant la fin de la prière','Erinnerung 20 Minuten vor Ende der Gebetszeit','Alert 20 minutes before the prayer time ends'],
+  alertsOff: ['Isključeno','Désactivée','Aus','Off'],
+  alertsForeground: ['Dok je aplikacija otvorena','Quand l’appli est ouverte','Bei geöffneter App','While the app is open'],
+  alertsPush: ['I kad je aplikacija zatvorena','Même quand l’appli est fermée','Auch bei geschlossener App','Even when the app is closed'],
+  alertsHint: ['Na iPhoneu za obavijesti u pozadini dodaj aplikaciju na početni ekran. Telefon određuje zvuk obavijesti.','Sur iPhone, ajoute l’appli à l’écran d’accueil pour les notifications en arrière-plan. Le téléphone gère leur son.','Füge die App auf dem iPhone für Benachrichtigungen im Hintergrund zum Home-Bildschirm hinzu. Das Gerät bestimmt den Ton.','On iPhone, add the app to your Home Screen for background notifications. Your phone controls their sound.'],
+  alertsAudioHint: ['Za zvuk dodirni ekran nakon otvaranja aplikacije.','Pour activer le son, touche l’écran après avoir ouvert l’appli.','Tippe nach dem Öffnen der App auf den Bildschirm, um den Ton zu aktivieren.','Tap the screen after opening the app to enable sound.'],
+  alertsTest: ['Isprobaj upozorenje','Tester l’alerte','Erinnerung testen','Test alert'],
+  alertTestMessage: ['Probno upozorenje za namaz.','Alerte de prière de test.','Test der Gebetserinnerung.','Test prayer alert.'],
+  alertsTestSent: ['Probno upozorenje je poslano.','Alerte de test envoyée.','Testerinnerung gesendet.','Test alert sent.'],
+  alertsPermission: ['Dozvoli obavijesti za Namaz Svijet u postavkama telefona ili preglednika.','Autorise les notifications de Namaz Svijet dans les réglages du téléphone ou du navigateur.','Erlaube Namaz Svijet Benachrichtigungen in den Geräte- oder Browsereinstellungen.','Allow notifications for Namaz Svijet in your phone or browser settings.'],
+  alertsPushUnsupported: ['Obavijesti u pozadini nisu dostupne u ovom pregledniku. Na iPhoneu otvori aplikaciju s početnog ekrana.','Les notifications en arrière-plan sont indisponibles dans ce navigateur. Sur iPhone, ouvre l’appli depuis l’écran d’accueil.','Dieser Browser unterstützt keine Hintergrundbenachrichtigungen. Öffne die App auf dem iPhone vom Home-Bildschirm aus.','Background notifications are unavailable in this browser. On iPhone, open the app from the Home Screen.'],
+  alertsNoTimes: ['Sačekaj da se učita vaktija, pa pokušaj ponovo.','Attends le chargement des horaires, puis réessaie.','Warte, bis die Gebetszeiten geladen sind, und versuche es erneut.','Wait for the prayer times to load, then try again.'],
+  alertsSyncError: ['Upozorenje se nije moglo ažurirati. Provjeri vezu i pokušaj ponovo.','Impossible de mettre à jour l’alerte. Vérifie la connexion puis réessaie.','Die Erinnerung konnte nicht aktualisiert werden. Prüfe die Verbindung und versuche es erneut.','The alert could not be updated. Check your connection and try again.'],
+  alertsAudioError: ['Zvuk se nije mogao pokrenuti.','Le son n’a pas pu démarrer.','Der Ton konnte nicht abgespielt werden.','The sound could not play.'],
+  prayerEnding: ['Vrijeme namaza ističe u {time}.','L’heure de la prière se termine à {time}.','Die Gebetszeit endet um {time} Uhr.','The prayer time ends at {time}.'],
   close: ['Zatvori','Fermer','Schließen','Close'],
   language: ['Jezik aplikacije','Langue de l’application','App-Sprache','App language'],
   times: ['Namazi','Prières','Gebete','Prayers'],
@@ -112,3 +127,5 @@ const UI_TEXT = {
   fajrError: ['Kraj sabaha mora biti poslije početka sabaha.','La fin du fajr doit être après son début.','Das Ende des Fadschr muss nach seinem Beginn liegen.','Fajr must end after it starts.'],
   directions: [['sjever','sjeveroistok','istok','jugoistok','jug','jugozapad','zapad','sjeverozapad'],['nord','nord-est','est','sud-est','sud','sud-ouest','ouest','nord-ouest'],['Norden','Nordosten','Osten','Südosten','Süden','Südwesten','Westen','Nordwesten'],['north','northeast','east','southeast','south','southwest','west','northwest']]
 };
+
+export { APP_LANGUAGES, UI_TEXT };

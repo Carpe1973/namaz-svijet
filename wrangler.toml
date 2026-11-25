@@ -1,7 +1,18 @@
 name = "namaz-svijetav2"
 compatibility_date = "2026-11-18"
 workers_dev = true
+main = "worker/prayer-alerts.mjs"
 keep_vars = true
 
 [assets]
 directory = "."
+binding = "ASSETS"
+run_worker_first = ["/api/prayer-alerts/*"]
+
+[[durable_objects.bindings]]
+name = "PRAYER_ALERTS"
+class_name = "PrayerAlerts"
+
+[[migrations]]
+tag = "prayer-alerts-v1"
+new_sqlite_classes = ["PrayerAlerts"]
