@@ -209,7 +209,7 @@ export function createPrayerReminders({translate, readContext, saved, save}) {
         showFeedback('alertsTestSent');
       }
     } catch {
-      showFeedback(mode === 'foreground' ? 'alertsAudioError' : 'alertsSyncError');
+      showFeedback(mode === 'foreground' ? 'alertsAudioError' : 'alertsPushTestError');
     } finally {
       modeSelect.disabled = testButton.disabled = false;
     }

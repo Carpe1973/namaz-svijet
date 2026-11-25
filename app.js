@@ -2,12 +2,12 @@
    GPS, kompas i ručni raspored su opt-in; izvor vremena je jasno označen. */
 'use strict';
 const $=id=>document.getElementById(id);
-import { APP_LANGUAGES, UI_TEXT } from './i18n.js?v=3.38';
+import { APP_LANGUAGES, UI_TEXT } from './i18n.js?v=3.39';
 import {
   KEYS, PRAYERS, MOSQUE_TIMEZONE, cleanTime, dayPlus, displayPrayerTime,
   fetchTimings, keyOf, localEpoch, pad, zoned
 } from './prayer-times.mjs';
-import { createPrayerReminders } from './prayer-reminders.mjs';
+import { createPrayerReminders } from './prayer-reminders.mjs?v=3.39';
 
 const DEFAULT={name:'Le Locle, Švicarska',latitude:47.057,longitude:6.752,timezone:MOSQUE_TIMEZONE};
 const AL_BADR_URL='https://mawaqit.net/fr/mosquee-al-badr-le-locle';

@@ -144,8 +144,17 @@ export class PrayerAlerts {
       const lastTest = await this.storage.get('test');
       if (lastTest && Date.now() - lastTest < 3000) return new Response(null, {status: 429});
       await this.storage.put('test', Date.now());
-      const result = await this.send(settings, null);
-      return new Response(null, {status: result.ok ? 204 : 502});
+      try {
+        const result = await this.send(settings, null);
+        if (result.ok) return new Response(null, {status: 204});
+        const response = await result.json().catch(() => null);
+        const reason = typeof response?.reason === 'string' && /^[A-Za-z]{1,50}$/.test(response.reason)
+          ? response.reason
+          : undefined;
+        return Response.json({pushStatus: result.status, reason}, {status: 502});
+      } catch {
+        return new Response(null, {status: 502});
+      }
     }
     return new Response(null, {status: 404});
   }
@@ -164,7 +173,7 @@ export class PrayerAlerts {
       }
     }, settings.subscription, keys);
     return fetch(settings.subscription.endpoint, {
-      ...payload, redirect: 'error', signal: AbortSignal.timeout(8000)
+      ...payload, redirect: 'manual', signal: AbortSignal.timeout(8000)
     });
   }
 
